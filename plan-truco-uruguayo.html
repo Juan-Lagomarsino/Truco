@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="es-UY">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Truco Uruguayo — plan de obra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Karla:ital,wght@0,400;0,500;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --tabla:#16211D;
+  --tabla-alta:#1E2C27;
+  --tabla-borde:#2C3E37;
+  --tiza:#EFE7D2;
+  --tiza-tenue:#8C9A91;
+  --oro:#E0A32B;
+  --copa:#C0503A;
+  --espada:#5B8FA8;
+  --basto:#7FA055;
+  --display:'Alfa Slab One', Georgia, serif;
+  --texto:'Karla', system-ui, sans-serif;
+  --dato:'Space Mono', ui-monospace, monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--tabla);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(224,163,43,.10), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 90% 110%, rgba(91,143,168,.07), transparent 70%);
+  background-attachment:fixed;
+  color:var(--tiza);
+  font-family:var(--texto);
+  font-size:16px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:40px 24px 96px}
+
+/* ---------- encabezado y marcador ---------- */
+.hero{
+  display:grid;grid-template-columns:1fr auto;gap:48px;align-items:end;
+  padding-bottom:32px;border-bottom:1px solid var(--tabla-borde);
+}
+.eyebrow{
+  font-family:var(--dato);font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--oro);margin:0 0 14px
+}
+h1{
+  font-family:var(--display);font-weight:400;
+  font-size:clamp(38px,6.4vw,68px);line-height:.94;margin:0;
+  letter-spacing:-.01em;
+}
+h1 em{font-style:normal;color:var(--oro)}
+.bajada{color:var(--tiza-tenue);max-width:42ch;margin:18px 0 0;font-size:15.5px}
+
+.marcador{display:flex;gap:34px}
+.col-marca{text-align:center}
+.col-marca h2{
+  font-family:var(--dato);font-size:11px;font-weight:700;letter-spacing:.2em;
+  text-transform:uppercase;margin:0 0 12px;color:var(--tiza-tenue)
+}
+.col-marca.buenas h2{color:var(--oro)}
+.ventanas{display:flex;gap:9px}
+.ventana{width:52px;height:52px;display:block}
+.marca{
+  stroke:var(--tiza);stroke-width:5;stroke-linecap:round;fill:none;
+  stroke-dasharray:100;stroke-dashoffset:100;opacity:0;
+  transition:stroke-dashoffset .5s ease,opacity .2s ease;
+}
+.buenas .marca{stroke:var(--oro)}
+.marca.on{stroke-dashoffset:0;opacity:.92}
+.cuenta{font-family:var(--display);font-size:26px;margin-top:12px;letter-spacing:.02em}
+.cuenta small{font-family:var(--dato);font-size:12px;color:var(--tiza-tenue);font-weight:400}
+
+/* ---------- proximo paso ---------- */
+.proximo{
+  margin:28px 0 0;padding:16px 20px;border-left:3px solid var(--oro);
+  background:rgba(224,163,43,.07);border-radius:0 8px 8px 0;
+}
+.proximo .rot{font-family:var(--dato);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--oro);display:block;margin-bottom:4px}
+.proximo p{margin:0;font-size:17px;font-weight:500}
+
+/* ---------- pestanias ---------- */
+.pestanias{display:flex;gap:4px;margin:40px 0 28px;flex-wrap:wrap;border-bottom:1px solid var(--tabla-borde)}
+.pestania{
+  appearance:none;background:none;border:0;border-bottom:2px solid transparent;
+  color:var(--tiza-tenue);font-family:var(--texto);font-size:14px;font-weight:700;
+  letter-spacing:.03em;padding:10px 16px;cursor:pointer;margin-bottom:-1px;
+  transition:color .15s,border-color .15s;
+}
+.pestania:hover{color:var(--tiza)}
+.pestania[aria-selected="true"]{color:var(--tiza);border-bottom-color:var(--oro)}
+.pestania:focus-visible{outline:2px solid var(--oro);outline-offset:3px;border-radius:4px}
+.panel[hidden]{display:none}
+
+/* ---------- fases ---------- */
+.fase{margin-bottom:34px}
+.fase-cab{display:flex;align-items:baseline;gap:14px;margin-bottom:6px}
+.fase-num{
+  font-family:var(--dato);font-size:11px;font-weight:700;letter-spacing:.14em;
+  color:var(--tabla);background:var(--capa,var(--oro));padding:3px 8px;border-radius:3px;
+  white-space:nowrap;
+}
+.fase h3{font-family:var(--texto);font-size:20px;font-weight:700;margin:0;letter-spacing:-.01em}
+.fase-nota{color:var(--tiza-tenue);font-size:14px;margin:0 0 14px}
+.tareas{list-style:none;margin:0;padding:0;border-top:1px solid var(--tabla-borde)}
+.tarea{border-bottom:1px solid var(--tabla-borde)}
+.tarea label{
+  display:flex;gap:14px;align-items:flex-start;padding:13px 4px;cursor:pointer;
+  transition:background .15s;
+}
+.tarea label:hover{background:var(--tabla-alta)}
+.tarea input{
+  appearance:none;flex:0 0 auto;width:19px;height:19px;margin:2px 0 0;
+  border:1.5px solid var(--tabla-borde);border-radius:4px;background:transparent;
+  cursor:pointer;position:relative;transition:border-color .15s,background .15s;
+}
+.tarea input:hover{border-color:var(--capa,var(--oro))}
+.tarea input:focus-visible{outline:2px solid var(--oro);outline-offset:2px}
+.tarea input:checked{background:var(--capa,var(--oro));border-color:var(--capa,var(--oro))}
+.tarea input:checked::after{
+  content:"";position:absolute;left:6px;top:2px;width:4px;height:9px;
+  border:solid var(--tabla);border-width:0 2.5px 2.5px 0;transform:rotate(43deg);
+}
+.tarea span{font-size:15.5px;transition:color .15s,opacity .15s}
+.tarea input:checked + span{color:var(--tiza-tenue);text-decoration:line-through;text-decoration-color:var(--tabla-borde);opacity:.65}
+
+/* ---------- tablas / stack ---------- */
+.lead{font-size:18px;max-width:60ch;margin:0 0 6px}
+.lead strong{color:var(--oro)}
+.sub{color:var(--tiza-tenue);max-width:62ch;margin:0 0 30px;font-size:15px}
+.filas{display:grid;gap:1px;background:var(--tabla-borde);border:1px solid var(--tabla-borde);border-radius:10px;overflow:hidden}
+.fila{
+  display:grid;grid-template-columns:1.15fr .5fr 1.35fr;gap:20px;
+  background:var(--tabla);padding:16px 20px;align-items:start;
+}
+.fila:hover{background:var(--tabla-alta)}
+.fila.encabezado{
+  background:var(--tabla-alta);font-family:var(--dato);font-size:10.5px;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--tiza-tenue);
+}
+.fila b{font-weight:700;font-size:15.5px;display:block}
+.fila .ruta{font-family:var(--dato);font-size:12px;color:var(--tiza-tenue);display:block;margin-top:2px}
+.leng{font-family:var(--dato);font-size:14px;font-weight:700;color:var(--capa,var(--tiza))}
+.fila p{margin:0;font-size:14.5px;color:var(--tiza-tenue)}
+
+/* ---------- instalar ---------- */
+.grupo-inst{margin-bottom:36px}
+.grupo-inst > h3{
+  font-family:var(--texto);font-size:13px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--oro);margin:0 0 4px;
+}
+.grupo-inst > p{color:var(--tiza-tenue);font-size:14.5px;margin:0 0 18px}
+.herramientas{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}
+.herr{
+  border:1px solid var(--tabla-borde);border-radius:10px;padding:17px 19px;
+  background:var(--tabla);transition:border-color .15s,transform .15s;
+}
+.herr:hover{border-color:var(--capa,var(--oro));transform:translateY(-2px)}
+.herr h4{margin:0 0 5px;font-size:16px;font-weight:700;display:flex;align-items:center;gap:9px}
+.punto{width:7px;height:7px;border-radius:50%;background:var(--capa,var(--oro));flex:0 0 auto}
+.herr p{margin:0 0 12px;font-size:14px;color:var(--tiza-tenue)}
+code{
+  font-family:var(--dato);font-size:12.5px;background:#0E1815;color:var(--basto);
+  padding:9px 11px;border-radius:6px;display:block;overflow-x:auto;white-space:nowrap;
+  border:1px solid var(--tabla-borde);
+}
+code + code{margin-top:6px}
+.opcional{font-family:var(--dato);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--tiza-tenue);border:1px solid var(--tabla-borde);padding:1px 6px;border-radius:99px;font-weight:400}
+
+/* ---------- tiendas ---------- */
+.tiendas{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:30px}
+.tienda{border:1px solid var(--tabla-borde);border-top:3px solid var(--capa);border-radius:10px;padding:20px}
+.tienda h4{margin:0;font-family:var(--texto);font-size:18px;font-weight:700}
+.precio{font-family:var(--display);font-size:30px;color:var(--capa);margin:6px 0 2px;line-height:1}
+.precio small{font-family:var(--dato);font-size:11px;color:var(--tiza-tenue);letter-spacing:.05em}
+.tienda p{font-size:14.5px;color:var(--tiza-tenue);margin:14px 0 0}
+.tienda p b{color:var(--tiza);font-weight:700}
+.aviso{border:1px solid var(--copa);background:rgba(192,80,58,.09);border-radius:10px;padding:20px 22px}
+.aviso h4{margin:0 0 8px;font-size:16px;color:var(--copa)}
+.aviso p{margin:0;font-size:15px;color:var(--tiza-tenue)}
+.aviso p + p{margin-top:10px}
+
+footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--tabla-borde);color:var(--tiza-tenue);font-size:13px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.reset{appearance:none;background:none;border:0;color:var(--tiza-tenue);font-family:var(--texto);font-size:13px;cursor:pointer;text-decoration:underline;padding:0}
+.reset:hover{color:var(--copa)}
+
+@media (max-width:860px){
+  .hero{grid-template-columns:1fr;gap:34px;align-items:start}
+  .fila{grid-template-columns:1fr;gap:6px}
+  .fila.encabezado{display:none}
+  .leng::before{content:"Lenguaje: ";color:var(--tiza-tenue);font-weight:400}
+}
+@media (max-width:520px){
+  .wrap{padding:28px 18px 72px}
+  .marcador{gap:22px}
+  .ventana{width:42px;height:42px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Plan de obra · solo dev</p>
+      <h1>Truco<br>Uruguayo <em>·</em><br>la app</h1>
+      <p class="bajada">Treinta tareas, como los treinta puntos de una partida. Quince malas para construir el juego, quince buenas para publicarlo. Marcá cada una a medida que la cerrás.</p>
+    </div>
+    <div class="marcador">
+      <div class="col-marca malas" id="col-malas">
+        <h2>Malas</h2>
+        <div class="ventanas"></div>
+        <div class="cuenta"><span class="n">0</span><small> / 15</small></div>
+      </div>
+      <div class="col-marca buenas" id="col-buenas">
+        <h2>Buenas</h2>
+        <div class="ventanas"></div>
+        <div class="cuenta"><span class="n">0</span><small> / 15</small></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="proximo">
+    <span class="rot">Lo que sigue</span>
+    <p id="proximo-txt">Cargando…</p>
+  </div>
+
+  <nav class="pestanias" role="tablist">
+    <button class="pestania" role="tab" aria-selected="true" data-panel="fases">Fases</button>
+    <button class="pestania" role="tab" aria-selected="false" data-panel="stack">Qué lenguaje para qué</button>
+    <button class="pestania" role="tab" aria-selected="false" data-panel="instalar">Qué instalar</button>
+    <button class="pestania" role="tab" aria-selected="false" data-panel="tiendas">Tiendas</button>
+  </nav>
+
+  <!-- ================= FASES ================= -->
+  <section class="panel" id="panel-fases" role="tabpanel"></section>
+
+  <!-- ================= STACK ================= -->
+  <section class="panel" id="panel-stack" role="tabpanel" hidden>
+    <p class="lead">Todo lo que se programa en este proyecto se escribe en <strong>C#</strong>. Una sola sintaxis para las reglas, los tests, el juego y el servidor.</p>
+    <p class="sub">No es comodidad: el servidor online tiene que correr exactamente el mismo código de reglas que el celular. Ese código compartido es lo que hace imposible que alguien haga trampa cantando un envido que no tiene.</p>
+
+    <div class="filas">
+      <div class="fila encabezado"><span>Capa</span><span>Lenguaje</span><span>Con qué</span></div>
+
+      <div class="fila" style="--capa:var(--oro)">
+        <span><b>Reglas del juego</b><span class="ruta">/core</span></span>
+        <span class="leng">C#</span>
+        <p>Class library de .NET, sin una sola referencia a Unity. Es lo que escribís vos a mano.</p>
+      </div>
+
+      <div class="fila" style="--capa:var(--oro)">
+        <span><b>Tests</b><span class="ruta">/tests</span></span>
+        <span class="leng">C#</span>
+        <p>xUnit. Corren en segundos porque no dependen del motor gráfico.</p>
+      </div>
+
+      <div class="fila" style="--capa:var(--oro)">
+        <span><b>Bot rival</b><span class="ruta">/core/ai</span></span>
+        <span class="leng">C#</span>
+        <p>Heurísticas, nada de machine learning. Vive adentro del núcleo así lo podés testear igual.</p>
+      </div>
+
+      <div class="fila" style="--capa:var(--copa)">
+        <span><b>Juego, UI y animación</b><span class="ruta">/game</span></span>
+        <span class="leng">C#</span>
+        <p>Unity 6. Los scripts son C# común; el editor te da la escena, el timeline y las animaciones.</p>
+      </div>
+
+      <div class="fila" style="--capa:var(--espada)">
+        <span><b>Servidor online</b><span class="ruta">/server</span></span>
+        <span class="leng">C#</span>
+        <p>ASP.NET Core con SignalR. Importa <span class="ruta" style="display:inline">/core</span> tal cual y manda la verdad de la partida.</p>
+      </div>
+
+      <div class="fila" style="--capa:var(--basto)">
+        <span><b>Automatización</b><span class="ruta">.github/workflows</span></span>
+        <span class="leng">YAML</span>
+        <p>GitHub Actions corriendo <span class="ruta" style="display:inline">dotnet test</span> en cada push. Diez líneas, una vez.</p>
+      </div>
+
+      <div class="fila" style="--capa:var(--tiza-tenue)">
+        <span><b>Arte y sonido</b><span class="ruta">/assets</span></span>
+        <span class="leng">—</span>
+        <p>Acá no se programa. Se dibuja y se graba. Es la parte que vas a tener que aprender de cero.</p>
+      </div>
+    </div>
+
+    <p class="sub" style="margin-top:28px">Si en algún momento querés cambiar Unity por Godot, cambiás solo la fila roja. Ese es el punto de tener el núcleo separado.</p>
+  </section>
+
+  <!-- ================= INSTALAR ================= -->
+  <section class="panel" id="panel-instalar" role="tabpanel" hidden>
+    <p class="lead">Instalá por tramos, no todo hoy.</p>
+    <p class="sub">Unity pesa varios gigas y no lo vas a abrir hasta dentro de un par de meses. Empezá con las cinco cosas del primer bloque y arrancá a escribir reglas esta semana.</p>
+
+    <div class="grupo-inst" style="--capa:var(--oro)">
+      <h3>Bloque 1 — esta semana</h3>
+      <p>Con esto ya podés escribir y testear todo el núcleo del juego.</p>
+      <div class="herramientas">
+        <div class="herr">
+          <h4><span class="punto"></span>Git</h4>
+          <p>Versionado. Todo el proyecto vive acá adentro.</p>
+          <code>winget install Git.Git</code>
+          <code>brew install git</code>
+        </div>
+        <div class="herr">
+          <h4><span class="punto"></span>Git LFS</h4>
+          <p>Para el arte y el audio. Configuralo ahora aunque no tengas assets: migrarlo después es un dolor.</p>
+          <code>git lfs install</code>
+        </div>
+        <div class="herr">
+          <h4><span class="punto"></span>.NET SDK (LTS)</h4>
+          <p>El compilador y el runner de tests de C#. Bajá la versión LTS vigente.</p>
+          <code>dotnet.microsoft.com/download</code>
+          <code>dotnet --version</code>
+        </div>
+        <div class="herr">
+          <h4><span class="punto"></span>VS Code + C# Dev Kit</h4>
+          <p>Editor y extensión oficial de C#. Alternativa: JetBrains Rider, gratis para uso no comercial.</p>
+          <code>code.visualstudio.com</code>
+        </div>
+        <div class="herr">
+          <h4><span class="punto"></span>Claude Code</h4>
+          <p>Instalador nativo. Después corré <span style="font-family:var(--dato)">/init</span> adentro del repo para generar el CLAUDE.md.</p>
+          <code>curl -fsSL https://claude.ai/install.sh | bash</code>
+          <code>winget install Anthropic.ClaudeCode</code>
+        </div>
+        <div class="herr">
+          <h4><span class="punto"></span>GitHub CLI <span class="opcional">opcional</span></h4>
+          <p>Crear repos, ramas y PRs sin salir de la terminal. Se lleva bien con Claude Code.</p>
+          <code>cli.github.com</code>
+        </div>
+      </div>
+    </div>
+
+    <div class="grupo-inst" style="--capa:var(--copa)">
+      <h3>Bloque 2 — cuando llegues al motor (fase 4)</h3>
+      <p>No antes. Instalarlo ahora solo te va a distraer del núcleo.</p>
+      <div class="herramientas">
+        <div class="herr">
+          <h4><span class="punto"></span>Unity Hub + Unity 6 LTS</h4>
+          <p>El Hub maneja las versiones. Elegí el LTS, nunca la beta. Licencia Personal, gratis.</p>
+          <code>unity.com/download</code>
+        </div>
+        <div class="herr">
+          <h4><span class="punto"></span>Módulo Android de Unity</h4>
+          <p>Se instala desde el Hub, no aparte. Trae el SDK y el NDK que Unity necesita.</p>
+          <code>Unity Hub › Installs › Add modules</code>
+        </div>
+        <div class="herr">
+          <h4><span class="punto"></span>Un celular Android tuyo</h4>
+          <p>Con depuración USB activada. Probar en hardware real desde temprano te ahorra sorpresas de rendimiento y de tamaño de texto.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grupo-inst" style="--capa:var(--basto)">
+      <h3>Bloque 3 — arte y sonido (fase 5)</h3>
+      <p>Acá empezás a aprender lo nuevo. Elegí una sola herramienta y quedate con ella.</p>
+      <div class="herramientas">
+        <div class="herr">
+          <h4><span class="punto"></span>Inkscape o Affinity Designer</h4>
+          <p>Vectorial, para las 40 cartas. Escalan sin pixelarse a cualquier pantalla. Inkscape es gratis.</p>
+          <code>inkscape.org</code>
+        </div>
+        <div class="herr">
+          <h4><span class="punto"></span>Krita o Aseprite</h4>
+          <p>Si preferís dibujar a mano alzada o en pixel art. Krita gratis, Aseprite unos USD 20.</p>
+          <code>krita.org</code>
+        </div>
+        <div class="herr">
+          <h4><span class="punto"></span>Audacity</h4>
+          <p>Editar los cantos y los efectos. Si grabás voces de cantos con gente de acá, mejor todavía.</p>
+          <code>audacityteam.org</code>
+        </div>
+        <div class="herr">
+          <h4><span class="punto"></span>Figma <span class="opcional">opcional</span></h4>
+          <p>Maquetar las pantallas antes de construirlas en Unity. Barato en tiempo, caro de saltear.</p>
+          <code>figma.com</code>
+        </div>
+      </div>
+    </div>
+
+    <div class="grupo-inst" style="--capa:var(--espada)">
+      <h3>Bloque 4 — antes de publicar (fase 7)</h3>
+      <p>Abrí las cuentas con varias semanas de anticipación: las verificaciones demoran.</p>
+      <div class="herramientas">
+        <div class="herr">
+          <h4><span class="punto"></span>Xcode</h4>
+          <p>Solo si tenés Mac. Es la única forma de compilar y subir a la App Store.</p>
+          <code>Mac App Store › Xcode</code>
+        </div>
+        <div class="herr">
+          <h4><span class="punto"></span>Cuentas de tienda</h4>
+          <p>Play Console, Apple Developer y Steamworks. Los números están en la pestaña Tiendas.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TIENDAS ================= -->
+  <section class="panel" id="panel-tiendas" role="tabpanel" hidden>
+    <p class="lead">Publicar en las tres sale menos de USD 250.</p>
+    <p class="sub">Lo caro no es la plata, son los requisitos previos. Especialmente el de Google.</p>
+
+    <div class="tiendas">
+      <div class="tienda" style="--capa:var(--basto)">
+        <h4>Google Play</h4>
+        <div class="precio">USD 25 <small>una sola vez</small></div>
+        <p>Tu público principal está acá. <b>Empezá por esta tienda.</b></p>
+      </div>
+      <div class="tienda" style="--capa:var(--espada)">
+        <h4>App Store</h4>
+        <div class="precio">USD 99 <small>por año</small></div>
+        <p>Necesitás una Mac para compilar y subir. <b>La revisión la hace una persona</b>, así que puede rebotar por detalles.</p>
+      </div>
+      <div class="tienda" style="--capa:var(--oro)">
+        <h4>Steam</h4>
+        <div class="precio">USD 100 <small>por juego</small></div>
+        <p>Se recupera cuando el juego llega a USD 1.000 de ingresos. <b>Dejalo para el final</b>: el público de Truco no está en PC.</p>
+      </div>
+    </div>
+
+    <div class="aviso">
+      <h4>La trampa de Google: 12 testers, 14 días</h4>
+      <p>Si tu cuenta de desarrollador es personal y la creaste después de noviembre de 2023, no podés publicar en producción hasta correr un test cerrado con <b>12 testers reales opted-in durante 14 días corridos</b>. Si alguien se baja y quedás en 11, el contador se reinicia.</p>
+      <p>Por eso: juntá <b>15 personas, no 12</b>, y empezá a buscarlas mucho antes de terminar el juego. Las cuentas de organización verificadas con número D-U-N-S están exentas, pero la verificación demora semanas.</p>
+    </div>
+
+    <div class="aviso" style="border-color:var(--espada);background:rgba(91,143,168,.09);margin-top:16px">
+      <h4 style="color:var(--espada)">Clasificación por edad</h4>
+      <p>Aunque no haya plata real, un juego de cartas con apuestas puede caer en la categoría de <b>juego de azar simulado</b> y subirte la clasificación en las tres tiendas. Contestá los cuestionarios con cuidado y sin adornar: si después detectan que declaraste mal, te bajan la app.</p>
+    </div>
+  </section>
+
+  <footer>
+    <span>El progreso se guarda solo en este navegador.</span>
+    <button class="reset" id="reset">Borrar todo el progreso</button>
+  </footer>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="tiza-filtro">
+      <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="2" seed="7" result="ruido"/>
+      <feDisplacementMap in="SourceGraphic" in2="ruido" scale="2.4" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<script>
+const FASES = [
+  { n:"Fase 0", capa:"var(--oro)", titulo:"Escribir las reglas",
+    nota:"Sin código. Cada ambigüedad que dejes acá son diez horas de debugging después.",
+    mitad:"malas", tareas:[
+      "Escribir RULES.md con la jerarquía completa de las 40 cartas",
+      "Definir las piezas, sus valores de envido, y qué pasa cuando la muestra es pieza",
+      "Cerrar flor, contraflor, todos los cantos y el puntaje de 1v1, 2v2 y 3v3"
+  ]},
+  { n:"Fase 1", capa:"var(--oro)", titulo:"Armar el repo",
+    nota:"Media tarde de trabajo. Después no lo tocás más.",
+    mitad:"malas", tareas:[
+      "Crear el repo en GitHub con /core, /tests y /game, más .gitignore y Git LFS",
+      "Generar los proyectos: dotnet new classlib -o core y dotnet new xunit -o tests",
+      "GitHub Actions corriendo dotnet test en cada push"
+  ]},
+  { n:"Fase 2", capa:"var(--oro)", titulo:"El núcleo de reglas",
+    nota:"El corazón del proyecto y la parte que escribís vos a mano. Sin Random adentro: la semilla entra desde afuera para que toda partida sea reproducible.",
+    mitad:"malas", tareas:[
+      "Carta, Palo y Mazo con la jerarquía uruguaya",
+      "La muestra y la detección de piezas",
+      "Cálculo de envido con piezas, y cálculo de flor",
+      "Máquina de estados de la mano: bazas, mano y pie, parda",
+      "Sistema de cantos: qué se puede cantar y qué se puede responder en cada momento",
+      "Puntaje, malas y buenas, fin de partida"
+  ]},
+  { n:"Fase 3", capa:"var(--oro)", titulo:"Jugable en consola",
+    nota:"Cuando termines esto, el juego ya existe. Todo lo que sigue es ponerle cara.",
+    mitad:"malas", tareas:[
+      "Partida completa 1v1 jugable desde la terminal",
+      "Bot con heurísticas: fuerza de mano y probabilidad de ganar el envido",
+      "Suite de tests en verde con partidas de semilla fija reproducibles"
+  ]},
+  { n:"Fase 4", capa:"var(--copa)", titulo:"Conectar el motor",
+    nota:"Recién acá instalás Unity. Objetivo: que funcione, no que sea lindo. Cartas como rectángulos de color está perfecto.",
+    mitad:"buenas", tareas:[
+      "Instalar Unity 6 y crear el proyecto en /game",
+      "Importar /core como assembly y correr una partida entera desde la UI",
+      "Mesa jugable: repartir, tirar carta, cantar, ver el puntaje",
+      "Build andando en tu propio celular"
+  ]},
+  { n:"Fase 5", capa:"var(--copa)", titulo:"Que se sienta bien",
+    nota:"La fase más larga y la que separa un prototipo de un producto. Acá aprendés lo nuevo.",
+    mitad:"buenas", tareas:[
+      "Arte de las 40 cartas y de la mesa",
+      "Animaciones: repartida, tirada, corte de mano",
+      "Sonido: cantos, cartas, ambiente de mesa",
+      "Menú, ajustes y un tutorial de reglas para el que no sabe jugar"
+  ]},
+  { n:"Fase 6", capa:"var(--espada)", titulo:"Multijugador online",
+    nota:"Opcional, pero es lo que hace que la gente vuelva. Si nunca hiciste backend en tiempo real, calculá dos o tres meses.",
+    mitad:"buenas", tareas:[
+      "Servidor .NET autoritativo reusando /core sin modificar",
+      "Matchmaking, salas y reconexión al volver de una llamada",
+      "Prueba con cuatro personas reales jugando al mismo tiempo"
+  ]},
+  { n:"Fase 7", capa:"var(--espada)", titulo:"Publicar",
+    nota:"Empezá los trámites mucho antes de terminar el juego.",
+    mitad:"buenas", tareas:[
+      "Abrir las cuentas: Play, Apple Developer y Steamworks",
+      "Juntar 15 testers y correr el test cerrado de 14 días de Google",
+      "Fichas de tienda: ícono, capturas, video, textos y clasificación por edad",
+      "Lanzar en orden: Play, después App Store, Steam al final"
+  ]}
+];
+
+const CLAVE = 'plan-truco-v1';
+let hechas = new Set();
+let idsOrden = [];
+
+/* ---------- render de fases ---------- */
+function renderFases(){
+  const cont = document.getElementById('panel-fases');
+  let html = '';
+  FASES.forEach((f, fi) => {
+    html += `<div class="fase" style="--capa:${f.capa}">
+      <div class="fase-cab"><span class="fase-num">${f.n}</span><h3>${f.titulo}</h3></div>
+      <p class="fase-nota">${f.nota}</p>
+      <ul class="tareas">`;
+    f.tareas.forEach((t, ti) => {
+      const id = `t${fi}-${ti}`;
+      idsOrden.push({id, texto:t, mitad:f.mitad});
+      html += `<li class="tarea"><label>
+        <input type="checkbox" id="${id}" data-mitad="${f.mitad}">
+        <span>${t}</span></label></li>`;
+    });
+    html += `</ul></div>`;
+  });
+  cont.innerHTML = html;
+  cont.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('change', () => {
+      inp.checked ? hechas.add(inp.id) : hechas.delete(inp.id);
+      actualizar();
+      guardar();
+    });
+  });
+}
+
+/* ---------- marcador de tiza ---------- */
+const TRAZOS = [
+  "M11 11 L41 11",   // arriba
+  "M41 11 L41 41",   // derecha
+  "M41 41 L11 41",   // abajo
+  "M11 41 L11 11",   // izquierda
+  "M11 11 L41 41"    // la diagonal del quinto
+];
+function construirVentanas(colId){
+  const cont = document.querySelector(`#${colId} .ventanas`);
+  let html = '';
+  for(let v=0; v<3; v++){
+    html += `<svg class="ventana" viewBox="0 0 52 52" aria-hidden="true"><g filter="url(#tiza-filtro)">`;
+    TRAZOS.forEach((d,i) => { html += `<path class="marca" data-i="${v*5+i}" d="${d}"/>`; });
+    html += `</g></svg>`;
+  }
+  cont.innerHTML = html;
+}
+
+function pintarColumna(colId, cantidad){
+  const col = document.getElementById(colId);
+  col.querySelectorAll('.marca').forEach(m => {
+    m.classList.toggle('on', Number(m.dataset.i) < cantidad);
+  });
+  col.querySelector('.cuenta .n').textContent = cantidad;
+}
+
+/* ---------- estado ---------- */
+function actualizar(){
+  let malas = 0, buenas = 0;
+  document.querySelectorAll('.tarea input').forEach(inp => {
+    if(inp.checked){ inp.dataset.mitad === 'malas' ? malas++ : buenas++; }
+  });
+  pintarColumna('col-malas', malas);
+  pintarColumna('col-buenas', buenas);
+
+  const pendiente = idsOrden.find(t => !hechas.has(t.id));
+  const txt = document.getElementById('proximo-txt');
+  if(pendiente){
+    txt.textContent = pendiente.texto;
+  } else {
+    txt.textContent = 'Treinta puntos. Se acabó la partida — el juego está publicado.';
+  }
+}
+
+/* ---------- persistencia ---------- */
+async function cargar(){
+  try{
+    const r = await window.storage.get(CLAVE);
+    if(r && r.value) hechas = new Set(JSON.parse(r.value));
+  }catch(e){ /* primera vez o sin storage: arrancamos en cero */ }
+  hechas.forEach(id => { const el = document.getElementById(id); if(el) el.checked = true; });
+}
+async function guardar(){
+  try{ await window.storage.set(CLAVE, JSON.stringify([...hechas])); }catch(e){}
+}
+
+/* ---------- pestañas ---------- */
+document.querySelectorAll('.pestania').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.pestania').forEach(b => b.setAttribute('aria-selected', b === btn));
+    document.querySelectorAll('.panel').forEach(p => {
+      p.hidden = p.id !== 'panel-' + btn.dataset.panel;
+    });
+  });
+});
+
+document.getElementById('reset').addEventListener('click', async () => {
+  hechas.clear();
+  document.querySelectorAll('.tarea input').forEach(i => i.checked = false);
+  actualizar();
+  await guardar();
+});
+
+/* ---------- arranque ---------- */
+construirVentanas('col-malas');
+construirVentanas('col-buenas');
+renderFases();
+cargar().then(actualizar);
+</script>
+</body>
+</html>
