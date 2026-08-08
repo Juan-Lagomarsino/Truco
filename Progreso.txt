@@ -1,0 +1,3 @@
+Sesion 1: Cree las reglas.
+Sesion 2: Puli las reglas y las pase por un filtro de IA para normalizarlas. 
+Sesion 3: Arranque a crear el Dominio
