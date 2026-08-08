@@ -1,19 +1,46 @@
 namespace Domain;
 
-public class Carta
+/// <summary>
+/// Los cuatro palos del mazo español. El orden es arbitrario: ninguna regla del
+/// Truco depende del valor numérico del palo (las matas y la fuerza se definen
+/// por tabla explícita en RULES_Afinadas.md, no por índice de palo).
+/// </summary>
+public enum Palo
 {
-    private int _numeroCarta;
-    private int _paloCarta; // Palos 0,1,2,3 Son 0-Oro, 1-Copa, 2-Espada, 3-Basto
-
-    public Carta(int numeroCarta, int paloCarta)
-    {
-        _numeroCarta = numeroCarta;
-        _paloCarta = paloCarta;
-    }
-
-    public int NumeroCarta => _numeroCarta;
-
-    public int PaloCarta => _paloCarta;
+    Oro,
+    Copa,
+    Espada,
+    Basto,
 }
 
+/// <summary>
+/// La identidad de una carta: número + palo, y nada más.
+/// RULES_Afinadas.md §"Jerarquia en formato programacion": Carta = (Numero, Palo),
+/// con Numero ∈ N = [1,2,3,4,5,6,7,10,11,12] (mazo español, sin 8 ni 9) y Palo ∈ P.
+///
+/// La <b>fuerza</b> (para resolver bazas) y los <b>tantos</b> (para envido y flor)
+/// NO viven acá: dependen de la muestra y son funciones aparte. Ver core-dominio.
+/// </summary>
+public readonly record struct Carta
+{
+    public int Numero { get; }
+    public Palo Palo { get; }
 
+    public Carta(int numero, Palo palo)
+    {
+        if (!EsNumeroDelMazo(numero))
+            throw new ArgumentOutOfRangeException(
+                nameof(numero), numero,
+                "El mazo español solo tiene los números 1..7 y 10..12 (sin 8 ni 9).");
+
+        if (!Enum.IsDefined(palo))
+            throw new ArgumentOutOfRangeException(
+                nameof(palo), palo, "Palo desconocido.");
+
+        Numero = numero;
+        Palo = palo;
+    }
+
+    private static bool EsNumeroDelMazo(int numero) =>
+        numero is (>= 1 and <= 7) or (>= 10 and <= 12);
+}
