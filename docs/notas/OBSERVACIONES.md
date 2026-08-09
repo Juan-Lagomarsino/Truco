@@ -24,14 +24,26 @@ reproducir visualmente este orden de reparto para que se vea como en la mesa rea
 
 ---
 
-## O2. Ventana del envido A1 con compañeros (2v2), simplificada
+## O2. El envido lo inicia el jugador en turno (no es out-of-turn)
 
 **Fecha:** 2026-08-09
 **Dónde:** `core/Partido.cs`, `PuedeIniciarEnvido` / `AccionesLegales`.
 
-La decisión A1 dice que un compañero que todavía no tiró puede iniciar el envido
-aunque yo ya haya tirado (out-of-turn). Por ahora el canto lo inicia el jugador en
-turno; en 1v1 coincide exactamente con A1. Para el 2v2 es una restricción menor (el
-envido/flor funcionan, sólo que arranca el que está en turno). Queda como refinamiento
-a implementar si hace falta afinar la ventana con compañeros fuera de turno.
+El juego es siempre por turnos: en cada momento hay exactamente un jugador que le
+toca, nunca se elige quién tira. El canto (envido, flor) lo inicia el jugador en
+turno, que es como está implementado. La cláusula de A1 sobre "los compañeros que no
+tiraron" se refiere a que un compañero puede cantar cuando le llega su turno, no fuera
+de turno. No hay refinamiento pendiente acá: el modelo por turnos es el correcto.
+
+---
+
+## O3. Pico a pico: posibilidad de jugar los tres a la vez
+
+**Fecha:** 2026-08-09
+
+En el modo de a 6, el pico a pico son tres manos de 1v1 que se juegan en secuencia
+(mientras una se juega, los otros cuatro esperan sin ver sus cartas). El juego real es
+así, secuencial. **Posibilidad de diseño (no implementar por ahora):** un toggle para
+jugar los tres pico a pico a la vez y hacerlo más fluido. El diseño del dominio debería
+dejar la puerta abierta a esto, pero la regla base es secuencial.
 
