@@ -193,6 +193,20 @@ contesta compromete al equipo. Por regla no escrita suele responder "el pie" (el
 último de ese equipo en recibir cartas). **Idea de implementación:** un toggle para
 elegir entre "sólo responde el pie" y "responde cualquiera".
 
+### G1. Quién abre la baza siguiente cuando gana un equipo (2v2)
+**Estado:** DECIDIDA (2026-08-09)
+**Decisión:** abre el jugador que ganó con la carta más alta. Si dos del mismo equipo
+empataron exactamente arriba (mismo nivel), abre el que tiró primero en esa baza (el
+más cercano al que abrió). Si la baza fue parda, sigue abriendo el mano (D2).
+
+### G2. Enfrentamiento de flores con collera (2v2)
+**Estado:** DECIDIDA (2026-08-09)
+**Decisión:** en un enfrentamiento (los dos equipos tienen flor), gana el equipo de la
+flor más alta y cobra 3 por cada una de sus flores (collera 6, trillera 9); el equipo
+perdedor no cobra. Mismo criterio de "3 por cada flor" cuando las flores son todas de
+un solo equipo. La denuncia de flor escondida también paga 3 por cada flor escondida
+del rival.
+
 ---
 
 ## Notas de verificación

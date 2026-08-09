@@ -135,13 +135,15 @@ La regla corta es: si hay parda, gana el que gano la primera ronda que no fue pa
 
 La baza siguiente la abre el que gano la anterior; si la baza fue parda, la abre el jugador mano.
 
+En 2v2 y 3v3 la baza la gana el equipo de la carta mas alta. Si las dos cartas mas altas son del mismo equipo, gana ese equipo (no es parda); solo es parda si el maximo lo comparten equipos distintos. Abre la baza siguiente el que gano con la carta mas alta; si dos del mismo equipo empataron arriba, el que tiro primero en esa baza.
+
 ---
 
 ## El toque de envido. Que es, como contarlo y como jugarlo.
 
 El envido es apostar a quien tiene mas puntos en la mano. Se toca en la primera ronda, con un detalle: un jugador que ya tiro su carta no puede iniciar el envido, pero los que todavia no tiraron si pueden, y siempre se puede revirar aunque ya hayas tirado. La ventana se cierra cuando termina la primera baza. Cuando se quiere, el que es mano canta sus puntos y despues siguen los demas en sentido antihorario, pero solo cantan si superan lo que ya se dijo. El que no supera dice "son buenas". Si hay empate gana el equipo que es mano.
 
-Una mano puede tener entre 0 y 37 puntos.
+Una mano puede tener entre 0 y 37 puntos. En 2v2 y 3v3 cada equipo juega la mejor mano de sus jugadores: se comparan los dos equipos, y el empate lo gana el equipo mano.
 
 ### Cuanto vale cada carta
 
@@ -232,7 +234,7 @@ Si mas de un jugador tiene flor, todos la tienen que cantar enseguida de que se 
 
 Si las flores son todas de un mismo equipo, ese equipo se lleva 3 puntos por cada flor.
 
-Si hay flores en los dos equipos se enfrentan.
+Si hay flores en los dos equipos se enfrentan: gana el equipo de la flor mas alta y cobra 3 por cada una de sus flores (collera 6, trillera 9); el otro equipo no cobra. La flor mas alta de cada equipo es la que lo representa; el empate lo gana el equipo mano.
 
 | Canto | Como se resuelve |
 | --- | --- |
