@@ -11,14 +11,7 @@ Estado: `ABIERTA` / `DECIDIDA`
 
 ## Bloque B — Detectadas al leer el documento (no estaban anotadas)
 
-### B10. Rotación del pico a pico en partidas de a 6
-**Estado:** ABIERTA
-**El caso:** el documento dice que se alternan una redondilla y tres manos de
-uno contra uno, pero no dice qué jugador enfrenta a cuál en cada una de las tres,
-ni cómo rota el reparto.
-**Recomendación:** dejar el modo de 6 jugadores **fuera del alcance inicial**.
-Implementá 1v1 y 2v2, dejá la estructura preparada, y volvé al 3v3 cuando la
-mesa esté jugable. Es el modo con más reglas propias y menos especificadas.
+*(Todas decididas. Ver Solucionadas.)*
 
 ---
 
@@ -206,6 +199,26 @@ flor más alta y cobra 3 por cada una de sus flores (collera 6, trillera 9); el 
 perdedor no cobra. Mismo criterio de "3 por cada flor" cuando las flores son todas de
 un solo equipo. La denuncia de flor escondida también paga 3 por cada flor escondida
 del rival.
+
+### B10. Estructura del modo de a 6 (redondilla y pico a pico)
+**Estado:** DECIDIDA (2026-08-09)
+**Decisión:**
+- **Ciclo:** una redondilla (3v3) y después un pico a pico, y así hasta que un
+  equipo llega a la mitad. La redondilla va primero.
+- **Pico a pico:** son tres manos de 1v1 que se juegan **en secuencia**. Un solo
+  reparto (6 manos y muestra nueva); mientras se juega un pico, los otros esperan sin
+  ver sus cartas. Las parejas son por asiento, el de enfrente: jugador `j` contra `j+3`
+  (con 6: (0,3), (1,4), (2,5)). El mano de cada pico es el jugador más bajo de la
+  pareja (el más cercano al mazo).
+- **Reparto:** se reparte como en la ronda. El repartidor rota una silla por reparto:
+  uno para la redondilla y uno para el pico a pico.
+- **Corte a la mitad:** se termina el **estado** en curso (la redondilla, o el pico a
+  pico entero = los 3) y recién ahí, si un equipo llegó a la mitad, se sigue sólo con
+  redondillas. Llegar al largo (fin de partido) sí corta en el acto.
+- **Puntos:** siempre al equipo (en el 1v1 del pico, el equipo es el jugador).
+- **Falta Envido = 6 y Contra Flor al Resto = 12 en el pico a pico.**
+- **Diseño (no implementar):** dejar la puerta abierta a un toggle para jugar los tres
+  pico a pico a la vez; la regla base es secuencial (ver OBSERVACIONES O3).
 
 ---
 
