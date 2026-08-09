@@ -31,6 +31,14 @@ public static class Partido
         if (e.Terminado)
             return Array.Empty<Accion>();
 
+        // Un bid de flor pendiente tiene la máxima prioridad: sólo responde el rival con flor.
+        if (e.HayFlorPendiente)
+        {
+            return e.EquipoDe(jugador) == e.FlorPendiente!.Responde
+                ? new Accion[] { new Quiero(jugador), new NoQuiero(jugador) }
+                : Array.Empty<Accion>();
+        }
+
         // El envido tiene prioridad: si está pendiente, sólo responde el equipo que debe.
         if (e.HayEnvidoPendiente)
         {
@@ -40,7 +48,7 @@ public static class Partido
             var respuesta = new List<Accion> { new Quiero(jugador), new NoQuiero(jugador) };
             foreach (var canto in RevirosDeEnvido(e.EnvidoPendiente.Ultimo))
                 respuesta.Add(new CantarEnvido(jugador, canto));
-            if (PuedeCantarFlor(e, jugador)) respuesta.Add(new CantarFlor(jugador));
+            AgregarCantosDeFlor(e, jugador, respuesta);
             return respuesta;
         }
 
@@ -52,7 +60,7 @@ public static class Partido
 
             var respuesta = new List<Accion> { new Quiero(jugador), new NoQuiero(jugador) };
             AgregarAperturasDeEnvido(e, jugador, respuesta);
-            if (PuedeCantarFlor(e, jugador)) respuesta.Add(new CantarFlor(jugador));
+            AgregarCantosDeFlor(e, jugador, respuesta);
             return respuesta;
         }
 
@@ -66,8 +74,7 @@ public static class Partido
         if (PuedeCantarTruco(e, jugador))
             acciones.Add(new CantarTruco(jugador));
         AgregarAperturasDeEnvido(e, jugador, acciones);
-        if (PuedeCantarFlor(e, jugador))
-            acciones.Add(new CantarFlor(jugador));
+        AgregarCantosDeFlor(e, jugador, acciones);
         acciones.Add(new IrseAlMazo(jugador)); // sin cantos pendientes y en tu turno, siempre podés irte
 
         return acciones;
@@ -89,11 +96,19 @@ public static class Partido
         && e.BazasGanadas.Count == 0
         && !e.JugadasBaza.Any(j => j.Jugador.Equals(jugador));
 
+    private static void AgregarCantosDeFlor(EstadoPartida e, JugadorId jugador, List<Accion> acciones)
+    {
+        if (!PuedeCantarFlor(e, jugador)) return;
+        acciones.Add(new CantarFlor(jugador));
+        acciones.Add(new CantarFlorEnvido(jugador));
+        acciones.Add(new CantarContraFlorAlResto(jugador));
+    }
+
     // La flor se canta en la primera baza, antes de tirar la propia carta, si el jugador
     // la tiene y no se resolvió otra. Puede cantarla en su turno o al responder un canto.
     private static bool PuedeCantarFlor(EstadoPartida e, JugadorId jugador)
     {
-        if (e.FlorResuelta || e.BazasGanadas.Count != 0) return false;
+        if (e.HayFlorPendiente || e.FlorResuelta || e.BazasGanadas.Count != 0) return false;
         if (e.JugadasBaza.Any(j => j.Jugador.Equals(jugador))) return false;
         if (!Flor.Hay(e.ManosIniciales[jugador.Valor], e.Muestra)) return false;
 
@@ -130,6 +145,8 @@ public static class Partido
         {
             TirarCarta t => AplicarTirar(e, t),
             CantarFlor cf => AplicarCantarFlor(e, cf),
+            CantarFlorEnvido cfe => AplicarBidFlor(e, cfe.Jugador, esContra: false),
+            CantarContraFlorAlResto cc => AplicarBidFlor(e, cc.Jugador, esContra: true),
             CantarEnvido ce => AplicarCantarEnvido(e, ce),
             CantarTruco c => AplicarCantarTruco(e, c),
             Quiero q => AplicarQuiero(e, q),
@@ -141,7 +158,7 @@ public static class Partido
 
     private static EstadoPartida AplicarIrseAlMazo(EstadoPartida e, IrseAlMazo im)
     {
-        if (e.HayEnvidoPendiente || e.HayCantoPendiente)
+        if (e.HayFlorPendiente || e.HayEnvidoPendiente || e.HayCantoPendiente)
             throw new InvalidOperationException("No se puede ir al mazo con un canto sin resolver.");
         if (!im.Jugador.Equals(e.Turno))
             throw new InvalidOperationException($"No es el turno del jugador {im.Jugador.Valor}.");
@@ -159,30 +176,89 @@ public static class Partido
         // Base (14a): la flor más alta cobra 3; empate, el equipo mano. Cantar flor anula
         // el envido (F1). Los bids (Con Flor Envido / Contra Flor al Resto) y la denuncia
         // son 14b/14c.
-        var ganador = FlorGanador(e, cf.Jugador);
         return e with
         {
-            Contador = e.Contador.Sumar(ganador, 3),
+            Contador = e.Contador.Sumar(FlorGanador(e), 3),
             FlorResuelta = true,
             EnvidoPendiente = null,
             EnvidoJugado = true,
         };
     }
 
-    // Quién se lleva la flor en 1v1: el declarante contra el otro si también tiene flor.
-    private static EquipoId FlorGanador(EstadoPartida e, JugadorId declara)
+    // Bid de flor: si el rival no tiene flor no hay enfrentamiento (cobra la flor, 3);
+    // si tiene, queda pendiente hasta quiero/no quiero.
+    private static EstadoPartida AplicarBidFlor(EstadoPartida e, JugadorId jugador, bool esContra)
     {
-        var otro = new JugadorId((declara.Valor + 1) % e.CantidadJugadores);
-        if (!Flor.Hay(e.ManosIniciales[otro.Valor], e.Muestra))
-            return e.EquipoDe(declara);
+        if (!PuedeCantarFlor(e, jugador))
+            throw new InvalidOperationException($"El jugador {jugador.Valor} no puede cantar flor ahora.");
 
-        int florDeclara = Flor.De(e.ManosIniciales[declara.Valor], e.Muestra);
-        int florOtro = Flor.De(e.ManosIniciales[otro.Valor], e.Muestra);
+        var otro = new JugadorId((jugador.Valor + 1) % e.CantidadJugadores);
+        bool rivalConFlor = Flor.Hay(e.ManosIniciales[otro.Valor], e.Muestra);
 
-        if (florDeclara > florOtro) return e.EquipoDe(declara);
-        if (florOtro > florDeclara) return e.EquipoDe(otro);
+        if (!rivalConFlor)
+            return e with
+            {
+                Contador = e.Contador.Sumar(e.EquipoDe(jugador), 3),
+                FlorResuelta = true,
+                EnvidoPendiente = null,
+                EnvidoJugado = true,
+            };
+
+        return e with
+        {
+            FlorPendiente = new EstadoFlorBid(esContra, OtroEquipo(e.EquipoDe(jugador))),
+            EnvidoPendiente = null,
+            EnvidoJugado = true,
+        };
+    }
+
+    // Resuelve un bid de flor. Querido: la flor más alta cobra 5 (Con Flor Envido) o la
+    // falta + las flores (Contra Flor al Resto). No querido: el que cantó cobra 3 (A3).
+    private static EstadoPartida ResolverBidFlor(EstadoPartida e, JugadorId jugador, bool quiere)
+    {
+        var pend = e.FlorPendiente!;
+        if (e.EquipoDe(jugador) != pend.Responde)
+            throw new InvalidOperationException($"El jugador {jugador.Valor} no es quien tiene que responder la flor.");
+
+        EquipoId ganador;
+        int puntos;
+        if (quiere)
+        {
+            ganador = FlorGanador(e);
+            puntos = pend.EsContraFlorAlResto
+                ? FaltaEnvido(e.Contador) + 3 * FloresEnJuego(e)
+                : 5;
+        }
+        else
+        {
+            ganador = OtroEquipo(pend.Responde); // el que cantó
+            puntos = 3;
+        }
+
+        return e with
+        {
+            Contador = e.Contador.Sumar(ganador, puntos),
+            FlorPendiente = null,
+            FlorResuelta = true,
+        };
+    }
+
+    // Quién se lleva la flor entre los dos jugadores (1v1): la más alta; empate, equipo mano.
+    private static EquipoId FlorGanador(EstadoPartida e)
+    {
+        int f0 = FlorParaComparar(e.ManosIniciales[0], e.Muestra);
+        int f1 = FlorParaComparar(e.ManosIniciales[1], e.Muestra);
+
+        if (f0 > f1) return new EquipoId(0);
+        if (f1 > f0) return new EquipoId(1);
         return e.EquipoDe(e.JugadorMano); // empate → equipo mano
     }
+
+    private static int FlorParaComparar(IReadOnlyList<Carta> mano, Muestra muestra) =>
+        Flor.Hay(mano, muestra) ? Flor.De(mano, muestra) : -1;
+
+    private static int FloresEnJuego(EstadoPartida e) =>
+        e.ManosIniciales.Count(m => Flor.Hay(m, e.Muestra));
 
     private static EstadoPartida AplicarCantarEnvido(EstadoPartida e, CantarEnvido ce)
     {
@@ -215,8 +291,8 @@ public static class Partido
 
     private static EstadoPartida AplicarCantarTruco(EstadoPartida e, CantarTruco c)
     {
-        if (e.HayEnvidoPendiente)
-            throw new InvalidOperationException("Primero se resuelve el envido.");
+        if (e.HayFlorPendiente || e.HayEnvidoPendiente)
+            throw new InvalidOperationException("Primero se resuelve la flor o el envido.");
         if (e.HayCantoPendiente)
             throw new InvalidOperationException("Ya hay un canto esperando respuesta.");
         if (!PuedeCantarTruco(e, c.Jugador))
@@ -232,6 +308,8 @@ public static class Partido
 
     private static EstadoPartida AplicarQuiero(EstadoPartida e, Quiero q)
     {
+        if (e.HayFlorPendiente)
+            return ResolverBidFlor(e, q.Jugador, quiere: true);
         if (e.HayEnvidoPendiente)
             return ResolverEnvido(e, q.Jugador, quiere: true);
 
@@ -249,6 +327,8 @@ public static class Partido
 
     private static EstadoPartida AplicarNoQuiero(EstadoPartida e, NoQuiero n)
     {
+        if (e.HayFlorPendiente)
+            return ResolverBidFlor(e, n.Jugador, quiere: false);
         if (e.HayEnvidoPendiente)
             return ResolverEnvido(e, n.Jugador, quiere: false);
 
@@ -289,7 +369,7 @@ public static class Partido
 
     private static EstadoPartida AplicarTirar(EstadoPartida e, TirarCarta t)
     {
-        if (e.HayEnvidoPendiente || e.HayCantoPendiente)
+        if (e.HayFlorPendiente || e.HayEnvidoPendiente || e.HayCantoPendiente)
             throw new InvalidOperationException("Hay un canto sin responder; no se puede tirar carta.");
         if (!t.Jugador.Equals(e.Turno))
             throw new InvalidOperationException($"No es el turno del jugador {t.Jugador.Valor}.");

@@ -65,6 +65,9 @@ public sealed record EstadoPartida
     /// <summary>Ya se cantó y resolvió una flor en esta mano. Anula el envido y bloquea otra flor.</summary>
     public bool FlorResuelta { get; init; }
 
+    /// <summary>Un bid de flor (Con Flor Envido / Contra Flor al Resto) esperando respuesta.</summary>
+    public EstadoFlorBid? FlorPendiente { get; init; }
+
     /// <summary>El partido terminó cuando un equipo llegó al largo.</summary>
     public bool Terminado => Contador.Termino;
 
@@ -73,6 +76,9 @@ public sealed record EstadoPartida
 
     /// <summary>Hay un envido esperando respuesta.</summary>
     public bool HayEnvidoPendiente => EnvidoPendiente is not null;
+
+    /// <summary>Hay un bid de flor esperando respuesta.</summary>
+    public bool HayFlorPendiente => FlorPendiente is not null;
 
     /// <summary>El jugador mano de esta ronda: el que está seguido al repartidor.</summary>
     public JugadorId JugadorMano => new((Repartidor.Valor + 1) % CantidadJugadores);

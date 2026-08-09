@@ -23,6 +23,12 @@ public sealed record CantarEnvido(JugadorId Jugador, EnvidoCanto Canto) : Accion
 /// <summary>Un jugador canta su flor. Anula el envido; la flor más alta cobra 3.</summary>
 public sealed record CantarFlor(JugadorId Jugador) : Accion;
 
+/// <summary>Bid de flor "Con Flor Envido": si el rival con flor quiere, 5 a la flor más alta.</summary>
+public sealed record CantarFlorEnvido(JugadorId Jugador) : Accion;
+
+/// <summary>Bid de flor "Contra Flor al Resto": si el rival con flor quiere, la falta + las flores.</summary>
+public sealed record CantarContraFlorAlResto(JugadorId Jugador) : Accion;
+
 /// <summary>Aceptar el canto pendiente.</summary>
 public sealed record Quiero(JugadorId Jugador) : Accion;
 
