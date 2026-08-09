@@ -162,6 +162,29 @@ reviro (a diferencia del envido).
 los cantos de flor sí escalan; si resultara que acá también, revisar esta decisión
 junto con B3.
 
+### D1. Quién reparte la primera mano
+**Estado:** DECIDIDA (2026-08-08)
+**Contexto:** el reductor necesita un repartidor inicial. El que reparte no es
+mano; el mano es el jugador siguiente.
+**Decisión:** es un parámetro al crear la partida, con default el jugador 0 (así el
+jugador 1 es mano en la primera mano). El reparto rota una posición por mano.
+
+### D2. Quién abre la baza siguiente tras una parda
+**Estado:** DECIDIDA (2026-08-08)
+**Contexto:** el documento dice que abre la baza siguiente el que ganó la anterior,
+pero no dice qué pasa cuando la baza fue parda.
+**Decisión:** tras una parda, abre el jugador que es mano en esa ronda. (En la
+primera baza, que siempre abre el mano, coincide.)
+
+### D3. Reparto y semilla en el reductor
+**Estado:** DECIDIDA (2026-08-08)
+**Contexto:** el reductor tiene que repartir cada mano de forma determinista.
+**Decisión:** `EstadoPartida` guarda la semilla del barajado y el número de mano;
+cada mano se reparte de forma determinista desde el estado (barajador con semilla
+derivada de la base y el número de mano). Así se puede jugar y reproducir una
+partida entera desde un test. El corte del rival queda como acción futura; con
+barajado por semilla no hace falta para la equidad.
+
 ---
 
 ## Notas de verificación
