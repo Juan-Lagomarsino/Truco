@@ -40,8 +40,7 @@ public class EnvidoCantoTests
         var e1 = Partido.Aplicar(e, new CantarEnvido(J0, EnvidoCanto.Envido));
         var e2 = Partido.Aplicar(e1, new Quiero(J1));
 
-        Assert.Equal(2, e2.Contador.Puntos(E0)); // J0 (31) le gana a J1 (7)
-        Assert.Equal(0, e2.Contador.Puntos(E1));
+        Assert.Equal(new Cobro(E0, 2), e2.CobroEnvido); // J0 (31) le gana a J1 (7)
     }
 
     [Fact]
@@ -51,7 +50,7 @@ public class EnvidoCantoTests
         var e1 = Partido.Aplicar(e, new CantarEnvido(J0, EnvidoCanto.Envido));
         var e2 = Partido.Aplicar(e1, new Quiero(J1));
 
-        Assert.Equal(2, e2.Contador.Puntos(E0)); // empate → gana el mano (J0)
+        Assert.Equal(new Cobro(E0, 2), e2.CobroEnvido); // empate → gana el mano (J0)
     }
 
     [Fact]
@@ -61,8 +60,8 @@ public class EnvidoCantoTests
         var e1 = Partido.Aplicar(e, new CantarEnvido(J0, EnvidoCanto.Envido));
         var e2 = Partido.Aplicar(e1, new NoQuiero(J1));
 
-        Assert.Equal(1, e2.Contador.Puntos(E0)); // el que tocó (J0)
-        Assert.Equal(0, e2.NumeroDeMano);          // la mano NO terminó
+        Assert.Equal(new Cobro(E0, 1), e2.CobroEnvido); // el que tocó (J0)
+        Assert.Equal(0, e2.NumeroDeMano);                // la mano NO terminó
         Assert.True(e2.EnvidoJugado);
     }
 
@@ -75,7 +74,7 @@ public class EnvidoCantoTests
         var e3 = Partido.Aplicar(e2, new NoQuiero(J0));
 
         // No quiere el que abrió; el que tocó el segundo envido (J1) se lleva 2.
-        Assert.Equal(2, e3.Contador.Puntos(E1));
+        Assert.Equal(new Cobro(E1, 2), e3.CobroEnvido);
     }
 
     [Fact]
@@ -86,7 +85,7 @@ public class EnvidoCantoTests
         var e2 = Partido.Aplicar(e1, new CantarEnvido(J1, EnvidoCanto.RealEnvido));
         var e3 = Partido.Aplicar(e2, new Quiero(J0));
 
-        Assert.Equal(5, e3.Contador.Puntos(E0)); // 2 + 3, gana J0
+        Assert.Equal(new Cobro(E0, 5), e3.CobroEnvido); // 2 + 3, gana J0
     }
 
     [Fact]
@@ -98,7 +97,7 @@ public class EnvidoCantoTests
         var e3 = Partido.Aplicar(e2, new CantarEnvido(J0, EnvidoCanto.Envido));
         var e4 = Partido.Aplicar(e3, new Quiero(J1));
 
-        Assert.Equal(6, e4.Contador.Puntos(E0));
+        Assert.Equal(new Cobro(E0, 6), e4.CobroEnvido);
     }
 
     [Fact]
@@ -109,7 +108,7 @@ public class EnvidoCantoTests
         var e1 = Partido.Aplicar(e, new CantarEnvido(J0, EnvidoCanto.FaltaEnvido));
         var e2 = Partido.Aplicar(e1, new Quiero(J1));
 
-        Assert.Equal(15, e2.Contador.Puntos(E0));
+        Assert.Equal(new Cobro(E0, 15), e2.CobroEnvido);
     }
 
     [Fact]
@@ -144,9 +143,36 @@ public class EnvidoCantoTests
         var e2 = Partido.Aplicar(e1, new CantarEnvido(J1, EnvidoCanto.Envido));
         var e3 = Partido.Aplicar(e2, new Quiero(J0)); // resuelve el envido (gana J0, 31)
 
-        Assert.Equal(2, e3.Contador.Puntos(E0));   // envido cobrado
-        Assert.True(e3.HayCantoPendiente);          // el truco sigue pendiente
+        Assert.Equal(new Cobro(E0, 2), e3.CobroEnvido); // envido resuelto (pendiente de acreditar)
+        Assert.True(e3.HayCantoPendiente);              // el truco sigue pendiente
         Assert.Contains(Partido.AccionesLegales(e3, J1), a => a is Quiero); // ahora J1 responde el truco
+    }
+
+    // F4: los tantos se resuelven en el momento pero se acreditan al cerrar la mano.
+    [Fact]
+    public void LosTantos_SeResuelvenEnElMomento_PeroSeAcreditanAlCerrarLaMano()
+    {
+        var e = Estado(
+            new[] { C(1, Palo.Espada), C(1, Palo.Basto), C(4, Palo.Oro) },  // J0: matas, envido 4
+            new[] { C(6, Palo.Copa), C(5, Palo.Copa), C(3, Palo.Oro) },     // J1: envido 31, cartas débiles
+            repartidor: J0); // mano = J1
+
+        var e1 = Partido.Aplicar(e, new CantarEnvido(J1, EnvidoCanto.Envido));
+        var e2 = Partido.Aplicar(e1, new Quiero(J0)); // envido resuelto: gana J1 (31)
+
+        Assert.Equal(new Cobro(E1, 2), e2.CobroEnvido);
+        Assert.Equal(0, e2.Contador.Puntos(E1)); // todavía no acreditado
+
+        // Se juega la mano: J0 gana las dos bazas con las matas.
+        var e3 = Partido.Aplicar(e2, new TirarCarta(J1, C(6, Palo.Copa)));
+        var e4 = Partido.Aplicar(e3, new TirarCarta(J0, C(1, Palo.Espada)));
+        var e5 = Partido.Aplicar(e4, new TirarCarta(J0, C(1, Palo.Basto)));
+        var e6 = Partido.Aplicar(e5, new TirarCarta(J1, C(5, Palo.Copa)));
+
+        // Al cerrar la mano se acreditan envido (E1, 2) y truco liso (E0, 1).
+        Assert.Equal(2, e6.Contador.Puntos(E1));
+        Assert.Equal(1, e6.Contador.Puntos(E0));
+        Assert.Equal(1, e6.NumeroDeMano);
     }
 
     private static EstadoPartida Estado(

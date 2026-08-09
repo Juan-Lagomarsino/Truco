@@ -28,7 +28,7 @@ public class FlorBidTests
         var e1 = Partido.Aplicar(e, new CantarFlorEnvido(J0));
         var e2 = Partido.Aplicar(e1, new Quiero(J1));
 
-        Assert.Equal(5, e2.Contador.Puntos(E0));
+        Assert.Equal(new Cobro(E0, 5), e2.CobroFlor);
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class FlorBidTests
         var e1 = Partido.Aplicar(e, new CantarFlorEnvido(J0));
         var e2 = Partido.Aplicar(e1, new NoQuiero(J1));
 
-        Assert.Equal(3, e2.Contador.Puntos(E0));
+        Assert.Equal(new Cobro(E0, 3), e2.CobroFlor);
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public class FlorBidTests
         var e = Estado(Flor38Espada, SinFlor, repartidor: J1); // J1 sin flor
         var e1 = Partido.Aplicar(e, new CantarFlorEnvido(J0));
 
-        Assert.Equal(3, e1.Contador.Puntos(E0)); // no hay enfrentamiento: cobra la flor
+        Assert.Equal(new Cobro(E0, 3), e1.CobroFlor); // no hay enfrentamiento: cobra la flor
         Assert.True(e1.FlorResuelta);
     }
 
@@ -59,7 +59,7 @@ public class FlorBidTests
         var e1 = Partido.Aplicar(e, new CantarContraFlorAlResto(J0));
         var e2 = Partido.Aplicar(e1, new Quiero(J1));
 
-        Assert.Equal(21, e2.Contador.Puntos(E0));
+        Assert.Equal(new Cobro(E0, 21), e2.CobroFlor);
     }
 
     [Fact]
@@ -69,7 +69,7 @@ public class FlorBidTests
         var e1 = Partido.Aplicar(e, new CantarContraFlorAlResto(J0));
         var e2 = Partido.Aplicar(e1, new NoQuiero(J1));
 
-        Assert.Equal(3, e2.Contador.Puntos(E0));
+        Assert.Equal(new Cobro(E0, 3), e2.CobroFlor);
     }
 
     [Fact]

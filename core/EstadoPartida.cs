@@ -65,6 +65,12 @@ public sealed record EstadoPartida
     /// <summary>Ya se cantó y resolvió una flor en esta mano. Anula el envido y bloquea otra flor.</summary>
     public bool FlorResuelta { get; init; }
 
+    /// <summary>El cobro de flor resuelto, pendiente de acreditar al cerrar la mano (F4).</summary>
+    public Cobro? CobroFlor { get; init; }
+
+    /// <summary>El cobro de envido resuelto, pendiente de acreditar al cerrar la mano (F4).</summary>
+    public Cobro? CobroEnvido { get; init; }
+
     /// <summary>Un bid de flor (Con Flor Envido / Contra Flor al Resto) esperando respuesta.</summary>
     public EstadoFlorBid? FlorPendiente { get; init; }
 

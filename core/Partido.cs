@@ -178,7 +178,7 @@ public static class Partido
         // son 14b/14c.
         return e with
         {
-            Contador = e.Contador.Sumar(FlorGanador(e), 3),
+            CobroFlor = new Cobro(FlorGanador(e), 3),
             FlorResuelta = true,
             EnvidoPendiente = null,
             EnvidoJugado = true,
@@ -198,7 +198,7 @@ public static class Partido
         if (!rivalConFlor)
             return e with
             {
-                Contador = e.Contador.Sumar(e.EquipoDe(jugador), 3),
+                CobroFlor = new Cobro(e.EquipoDe(jugador), 3),
                 FlorResuelta = true,
                 EnvidoPendiente = null,
                 EnvidoJugado = true,
@@ -237,7 +237,7 @@ public static class Partido
 
         return e with
         {
-            Contador = e.Contador.Sumar(ganador, puntos),
+            CobroFlor = new Cobro(ganador, puntos),
             FlorPendiente = null,
             FlorResuelta = true,
         };
@@ -353,7 +353,7 @@ public static class Partido
 
         return e with
         {
-            Contador = e.Contador.Sumar(ganador, puntos),
+            CobroEnvido = new Cobro(ganador, puntos),
             EnvidoPendiente = null,
             EnvidoJugado = true,
         };
@@ -410,12 +410,24 @@ public static class Partido
         };
     }
 
-    // Cierra la mano: acredita los puntos al ganador y reparte la siguiente, salvo que el
-    // partido haya terminado.
-    private static EstadoPartida CerrarMano(EstadoPartida e, EquipoId ganador, int puntos)
+    // Cierra la mano acreditando en orden flor → envido → truco (B6, F4), cortando apenas
+    // un equipo llega al objetivo. Después reparte la mano siguiente.
+    private static EstadoPartida CerrarMano(EstadoPartida e, EquipoId ganadorTruco, int puntosTruco)
     {
-        var contador = e.Contador.Sumar(ganador, puntos);
+        var contador = e.Contador;
 
+        if (e.CobroFlor is Cobro cf)
+        {
+            contador = contador.Sumar(cf.Equipo, cf.Puntos);
+            if (contador.Termino) return e with { Contador = contador };
+        }
+        if (e.CobroEnvido is Cobro ce)
+        {
+            contador = contador.Sumar(ce.Equipo, ce.Puntos);
+            if (contador.Termino) return e with { Contador = contador };
+        }
+
+        contador = contador.Sumar(ganadorTruco, puntosTruco);
         if (contador.Termino)
             return e with { Contador = contador };
 

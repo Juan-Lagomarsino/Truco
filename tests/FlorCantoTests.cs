@@ -27,7 +27,7 @@ public class FlorCantoTests
         var e = Estado(Flor38Espada, SinFlor, repartidor: J1); // Turno = J0 (mano), J0 con flor
         var e1 = Partido.Aplicar(e, new CantarFlor(J0));
 
-        Assert.Equal(3, e1.Contador.Puntos(E0));
+        Assert.Equal(new Cobro(E0, 3), e1.CobroFlor);
     }
 
     [Fact]
@@ -36,8 +36,7 @@ public class FlorCantoTests
         var e = Estado(Flor38Espada, Flor37Oro, repartidor: J1); // J0 38 vs J1 37, Turno J0
         var e1 = Partido.Aplicar(e, new CantarFlor(J0));
 
-        Assert.Equal(3, e1.Contador.Puntos(E0));
-        Assert.Equal(0, e1.Contador.Puntos(E1));
+        Assert.Equal(new Cobro(E0, 3), e1.CobroFlor);
     }
 
     [Fact]
@@ -46,7 +45,7 @@ public class FlorCantoTests
         var e = Estado(Flor38Espada, Flor38Copa, repartidor: J0); // ambos 38, mano = J1
         var e1 = Partido.Aplicar(e, new CantarFlor(J1));
 
-        Assert.Equal(3, e1.Contador.Puntos(E1)); // empate → gana el mano (J1)
+        Assert.Equal(new Cobro(E1, 3), e1.CobroFlor); // empate → gana el mano (J1)
     }
 
     [Fact]
@@ -68,8 +67,8 @@ public class FlorCantoTests
         var e2 = Partido.Aplicar(e1, new CantarFlor(J0));
 
         Assert.False(e2.HayEnvidoPendiente);
-        Assert.Equal(0, e2.Contador.Puntos(E1)); // el envido no dio puntos
-        Assert.Equal(3, e2.Contador.Puntos(E0)); // la flor sí
+        Assert.Null(e2.CobroEnvido);                 // el envido no dio puntos
+        Assert.Equal(new Cobro(E0, 3), e2.CobroFlor); // la flor sí
     }
 
     [Fact]
