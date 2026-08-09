@@ -133,11 +133,13 @@ La mano son tres rondas. Gana la mano el equipo que gane dos rondas. Si un equip
 
 La regla corta es: si hay parda, gana el que gano la primera ronda que no fue parda. Si todas son pardas, gana el que es mano.
 
+La baza siguiente la abre el que gano la anterior; si la baza fue parda, la abre el jugador mano.
+
 ---
 
 ## El toque de envido. Que es, como contarlo y como jugarlo.
 
-El envido es apostar a quien tiene mas puntos en la mano. Se toca en la primera ronda. Cuando se quiere, el que es mano canta sus puntos y despues siguen los demas en sentido antihorario, pero solo cantan si superan lo que ya se dijo. El que no supera dice "son buenas". Si hay empate gana el que esta mas cerca de la mano.
+El envido es apostar a quien tiene mas puntos en la mano. Se toca en la primera ronda, con un detalle: un jugador que ya tiro su carta no puede iniciar el envido, pero los que todavia no tiraron si pueden, y siempre se puede revirar aunque ya hayas tirado. La ventana se cierra cuando termina la primera baza. Cuando se quiere, el que es mano canta sus puntos y despues siguen los demas en sentido antihorario, pero solo cantan si superan lo que ya se dijo. El que no supera dice "son buenas". Si hay empate gana el equipo que es mano.
 
 Una mano puede tener entre 0 y 37 puntos.
 
@@ -170,9 +172,11 @@ Ejemplo tengo 12 de Espada, 10 de Oro y 11 de Copa, sin piezas y los tres palos 
 | --- | --- |
 | Envido | 2 |
 | Real Envido | 3 |
-| Falta Envido | Los puntos que le faltan para terminar el partido al equipo que va primero |
+| Falta Envido | Los puntos que le faltan al equipo que va primero para cerrar su etapa |
 
-Se puede revirar. Sobre un envido se puede decir envido de nuevo, real envido o falta envido, y asi hasta que alguien diga quiero o no quiero. El que no quiere entrega los puntos del ultimo canto que se habia querido, y si no se habia querido ninguno entrega 1.
+La Falta Envido se cuenta contra el fin de la etapa del que va primero: si el equipo que va primero todavia esta en malas, vale lo que le falta para llegar a la mitad; si ya esta en buenas, lo que le falta para ganar el partido.
+
+Se puede revirar sin limite. Sobre un envido se puede decir envido de nuevo (cuantas veces se quiera), real envido o falta envido, y asi hasta que alguien diga quiero o no quiero. El que no quiere entrega los puntos del ultimo canto que se habia querido, y si no se habia querido ninguno entrega 1.
 
 | Cantos | Resultado |
 | --- | --- |
@@ -190,9 +194,9 @@ El envido va primero. Si se grito truco y todavia no se jugo el envido, se puede
 
 ## El canto de flor. Que es, como contarla y como jugarla.
 
-La flor son 3 puntos y hay que cantarla en el primer turno, antes de tirar la carta a la mesa en la primera ronda. Si tenes flor y no la cantas a tiempo, la perdiste.
+La flor son 3 puntos. Para cobrarla hay que cantarla en el primer turno, antes de tirar la carta a la mesa en la primera ronda. Si no la cantas a tiempo, no la cobras. Esconderla es valido, pero si el rival se da cuenta (por ejemplo porque tiraste dos piezas) te la puede reclamar: en ese caso los 3 puntos de esa flor pasan al equipo que la reclama, y el que la escondio no cobra nada.
 
-La flor invalida el envido. Si alguien canta flor no se puede tocar envido, y si alguien ya toco envido pero el otro equipo tiene flor, la flor lo anula.
+La flor invalida el envido. Si alguien canta flor no se puede tocar envido, y un envido que estaba pendiente se cancela sin puntos. Una flor escondida (no cantada) no anula: el envido se juega normal. La flor va antes que el truco: si quedan los dos, primero se resuelve la flor y despues se contesta el truco.
 
 ### Que es flor
 
@@ -232,9 +236,13 @@ Si hay flores en los dos equipos se enfrentan.
 
 | Canto | Como se resuelve |
 | --- | --- |
-| La mia flor | Se cuentan al final de la mano, 3 tantos para la flor mas alta |
-| Con flor envido | Se cuentan en el momento, 5 tantos para la flor mas alta |
-| Contra flor al resto | Se muestran las flores, la mas alta se lleva la falta del que va ganando mas los puntos de las flores en juego |
+| La mia flor | 3 tantos para la flor mas alta |
+| Con flor envido | Querido, 5 tantos para la flor mas alta; no querido, 3 al que canto |
+| Contra flor al resto | Querido, la flor mas alta se lleva la falta del que va ganando mas 3 por cada flor en juego; no querido, 3 al que canto |
+
+Si el rival no tiene flor no hay a quien enfrentar: el que canto la flor cobra 3 y no se juegan el Con Flor Envido ni el Contra Flor al Resto. Estos dos cantos son independientes: no se encadenan uno con otro. En un empate de flores gana el equipo que es mano.
+
+Los tantos se resuelven en el momento (se sabe quien gana y cuanto) pero se acreditan al cerrar la mano, en orden flor, envido y truco. El partido termina apenas un equipo llega al objetivo, respetando ese orden.
 
 ---
 
@@ -243,6 +251,8 @@ Si hay flores en los dos equipos se enfrentan.
 La mano por defecto vale 1 punto. En cualquier momento de la mano, cuando es tu turno, podes gritar truco y la subis a 2. El otro equipo dice quiero o no quiero. Si no quiere, el que grito se lleva el punto de la mano y se termina ahi.
 
 Se puede seguir revirando, pero siempre revira el equipo que quiso el canto anterior. Nunca podes revirar tu propio canto.
+
+Puede contestar cualquiera del equipo rival, y el primero que contesta compromete al equipo. Por costumbre contesta el pie (el ultimo del equipo en recibir cartas), pero no es obligatorio que sea el.
 
 | Canto | Vale si se quiere | Si no se quiere |
 | --- | --- | --- |
@@ -260,6 +270,8 @@ Ejemplo grito truco y el otro equipo quiere, entonces la mano vale 2. Despues es
 Irse al mazo es rendirse en la mano. El que se va entrega los puntos que estaban en juego en ese momento, o sea 1 si no se grito nada, o lo que valga el ultimo canto de truco querido.
 
 No te podes ir al mazo dejando cosas sin resolver. Si hay un envido o una flor cantados y sin cerrar, primero se resuelven esos puntos y despues te vas.
+
+Irse al mazo es del equipo: si un jugador se va, se va todo su equipo (salvo en el pico a pico de a 6, donde cada uno juega su mano). El que es mano se puede ir antes de tirar la primera carta: entrega 1 y la mano termina. Sobre la flor: si te vas y tenias flor sin cantar, esa flor no vale; pero si la cantaste y despues te vas, se cobran igual los 3 de la flor y el punto de la mano va al rival.
 
 ---
 
@@ -279,15 +291,20 @@ Existe un codigo de gestos para avisarle al compañero que cartas tenes sin que 
 
 ---
 
-## Cosas a confirmar antes de implementar
+## Cosas ya decididas
 
-Estos puntos varian segun con quien juegues y conviene fijarlos antes de escribir el codigo.
+Estos puntos estaban a confirmar y ya se decidieron; quedaron volcados arriba en las
+secciones que corresponden. El detalle de cada decision, con su fecha, esta en
+`PREGUNTAS_ABIERTAS.md`.
 
-- Hasta que momento exacto se puede tocar el envido. Toda la primera ronda, o hasta que el primer jugador tira su carta.
-- Si la flor es obligatoria cantarla o si podes esconderla.
-- Cuantos puntos entrega el que no quiere una Contra Flor al Resto.
-- Si la Falta Envido se cuenta contra el final del partido o contra el final de las malas cuando el que va primero todavia esta en malas.
-- Que pasa si el que es mano se va al mazo antes de tirar la primera carta.
+- Ventana del envido: toda la primera ronda, con gating por jugador (el que ya tiro no inicia).
+- La flor no es obligatoria: se canta para cobrarla, y si se esconde el rival puede reclamarla.
+- El que no quiere una Contra Flor al Resto entrega 3.
+- La Falta Envido se cuenta contra el fin de la etapa del que va primero (malas o buenas).
+- El mano se puede ir al mazo antes de tirar: entrega 1 y termina la mano.
+
+Lo unico que sigue abierto es la rotacion del pico a pico en el modo de a 6 (ver
+`PREGUNTAS_ABIERTAS.md`, B10).
 
 ---
 
