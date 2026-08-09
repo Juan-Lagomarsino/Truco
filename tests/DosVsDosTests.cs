@@ -128,6 +128,39 @@ public class DosVsDosTests
         Assert.Equal(new Cobro(E0, 6), e1.CobroFlor);
     }
 
+    // 16d: una partida 2v2 completa con todos los cantos termina, sin deadlock y con un
+    // solo equipo ganador, y los puntos nunca decrecen.
+    [Theory]
+    [InlineData(3)]
+    [InlineData(77)]
+    [InlineData(2024)]
+    public void UnaPartida2v2Completa_TerminaConUnGanador(int semilla)
+    {
+        var e = Partido.Nueva(largo: 30, semilla: semilla, cantidadJugadores: 4);
+        int pasos = 0, puntos0 = 0, puntos1 = 0;
+
+        while (!e.Terminado)
+        {
+            Assert.True(pasos++ < 40000, "La partida no debería tardar tanto.");
+
+            Accion? elegida = null;
+            for (int j = 0; j < e.CantidadJugadores; j++)
+            {
+                var legales = Partido.AccionesLegales(e, new JugadorId(j));
+                if (legales.Count > 0) { elegida = legales[pasos % legales.Count]; break; }
+            }
+            Assert.NotNull(elegida); // nunca hay deadlock
+
+            e = Partido.Aplicar(e, elegida!);
+
+            int n0 = e.Contador.Puntos(E0), n1 = e.Contador.Puntos(E1);
+            Assert.True(n0 >= puntos0 && n1 >= puntos1, "Los puntos no pueden decrecer.");
+            puntos0 = n0; puntos1 = n1;
+        }
+
+        Assert.True(e.Contador.Puntos(E0) >= 30 ^ e.Contador.Puntos(E1) >= 30);
+    }
+
     private static EstadoPartida Estado(
         IReadOnlyList<Carta> mano0, IReadOnlyList<Carta> mano1,
         IReadOnlyList<Carta> mano2, IReadOnlyList<Carta> mano3, JugadorId repartidor, Muestra? muestra = null)
