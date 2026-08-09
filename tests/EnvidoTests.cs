@@ -81,4 +81,31 @@ public class EnvidoTests
 
         Assert.Throws<ArgumentException>(() => Envido.De(mano, muestra));
     }
+
+    // Invariante (skill): si la mano no tiene flor, su envido cae en [0, 37].
+    // Las manos con flor no tienen envido, así que quedan fuera.
+    [Fact]
+    public void SinFlor_ElEnvidoEstaEntre0Y37()
+    {
+        var todas = Mazo.Completo().Cartas;
+        var muestrasDePrueba = new[]
+        {
+            new Muestra(C(3, Palo.Oro)),   // no pieza
+            new Muestra(C(2, Palo.Oro)),   // pieza (activa el 12 espejo)
+            new Muestra(C(11, Palo.Copa)),
+        };
+
+        foreach (var muestra in muestrasDePrueba)
+        {
+            var repartibles = todas.Where(c => c != muestra.Carta).ToArray();
+            for (int i = 0; i < repartibles.Length; i++)
+                for (int j = i + 1; j < repartibles.Length; j++)
+                    for (int k = j + 1; k < repartibles.Length; k++)
+                    {
+                        var mano = new[] { repartibles[i], repartibles[j], repartibles[k] };
+                        if (!Flor.Hay(mano, muestra))
+                            Assert.InRange(Envido.De(mano, muestra), 0, 37);
+                    }
+        }
+    }
 }
