@@ -29,6 +29,9 @@ public sealed record EstadoPartida
     /// <summary>Cartas que le quedan a cada jugador, indexadas por <see cref="JugadorId.Valor"/>.</summary>
     public required IReadOnlyList<IReadOnlyList<Carta>> Manos { get; init; }
 
+    /// <summary>Las tres cartas con que arrancó la mano cada jugador. El envido y la flor se cuentan sobre éstas, no sobre lo que queda.</summary>
+    public IReadOnlyList<IReadOnlyList<Carta>> ManosIniciales { get; init; } = Array.Empty<IReadOnlyList<Carta>>();
+
     /// <summary>Resultado de las bazas ya cerradas en esta mano.</summary>
     public required IReadOnlyList<GanadorBaza> BazasGanadas { get; init; }
 
@@ -53,11 +56,20 @@ public sealed record EstadoPartida
     /// <summary>El equipo que puede revirar el truco (el que quiso el último canto). Null en Nada: puede empezar cualquiera en su turno.</summary>
     public EquipoId? EquipoQuePuedeRevirar { get; init; }
 
+    /// <summary>El envido cantado que espera respuesta, o null si no hay ninguno.</summary>
+    public EstadoEnvido? EnvidoPendiente { get; init; }
+
+    /// <summary>El envido ya se jugó (se quiso o no se quiso) en esta mano: no se puede tocar de nuevo.</summary>
+    public bool EnvidoJugado { get; init; }
+
     /// <summary>El partido terminó cuando un equipo llegó al largo.</summary>
     public bool Terminado => Contador.Termino;
 
-    /// <summary>Hay un canto esperando quiero / no quiero.</summary>
+    /// <summary>Hay un truco esperando quiero / no quiero.</summary>
     public bool HayCantoPendiente => TrucoPendiente is not null;
+
+    /// <summary>Hay un envido esperando respuesta.</summary>
+    public bool HayEnvidoPendiente => EnvidoPendiente is not null;
 
     /// <summary>El jugador mano de esta ronda: el que está seguido al repartidor.</summary>
     public JugadorId JugadorMano => new((Repartidor.Valor + 1) % CantidadJugadores);

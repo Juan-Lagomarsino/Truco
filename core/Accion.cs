@@ -17,6 +17,9 @@ public sealed record TirarCarta(JugadorId Jugador, Carta Carta) : Accion;
 /// </summary>
 public sealed record CantarTruco(JugadorId Jugador) : Accion;
 
+/// <summary>Un jugador toca el envido (o lo revira: envido de nuevo, real envido, falta envido).</summary>
+public sealed record CantarEnvido(JugadorId Jugador, EnvidoCanto Canto) : Accion;
+
 /// <summary>Aceptar el canto pendiente.</summary>
 public sealed record Quiero(JugadorId Jugador) : Accion;
 

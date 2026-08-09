@@ -186,6 +186,7 @@ public class TrucoTests
             Repartidor = repartidor,
             Muestra = muestra,
             Manos = new IReadOnlyList<Carta>[] { mano0, mano1 },
+            ManosIniciales = new IReadOnlyList<Carta>[] { mano0, mano1 },
             BazasGanadas = new List<GanadorBaza>(),
             JugadasBaza = new List<Jugada>(),
             Abridor = mano,
