@@ -9,88 +9,7 @@ Estado: `ABIERTA` / `DECIDIDA`
 
 ---
 
-## Bloque A — Las que ya estaban anotadas en las reglas
-
-### A1. Hasta qué momento se puede tocar el envido
-**Estado:** ABIERTA
-**Opciones:** (a) durante toda la primera ronda; (b) hasta que el jugador mano
-tira su primera carta; (c) hasta que cada jugador tira la suya, por jugador.
-**Recomendación:** (a). Es la variante más común en Montevideo y la más simple de
-modelar: la ventana se cierra al terminar la primera baza.
-**Impacto:** `AccionesLegales` — define cuándo `Envido` está en la lista.
-
-### A2. ¿La flor es obligatoria?
-**Estado:** ABIERTA
-**Opciones:** (a) obligatoria, se canta o se pierde; (b) opcional, se puede
-esconder.
-**Recomendación:** (a) obligatoria. Si es opcional se abre una cascada: un
-jugador con dos piezas podría esconder flor y jugar envido, lo que rompe la
-afirmación del documento de que "nunca vas a tener envido con dos piezas".
-**Impacto:** grande. Toca el cálculo de envido, la validación de acciones y los
-tests de invariantes.
-
-### A3. Cuántos puntos entrega quien no quiere una Contra Flor al Resto
-**Estado:** ABIERTA
-**Opciones:** (a) 3 (una flor); (b) 4; (c) los tantos de las flores en juego.
-**Recomendación:** (a) 3, por simetría con "el que no quiere entrega los puntos
-del último canto querido", donde el último querido es la propia flor.
-
-### A4. Falta Envido: ¿contra el final del partido o contra el final de las malas?
-**Estado:** ABIERTA
-**Contexto:** si el equipo que va primero todavía está en malas, hay dos
-lecturas.
-**Recomendación:** contra el final del partido, siempre. Es lo que dice la letra
-actual del documento y evita un caso especial.
-**Impacto:** interactúa con B5 (empate) y con el pico a pico, donde la falta vale
-6 fijo.
-
-### A5. Qué pasa si el mano se va al mazo antes de tirar la primera carta
-**Estado:** ABIERTA
-**Recomendación:** se permite, entrega 1 punto (nada gritado) y la mano termina.
-El envido y la flor no llegaron a existir, así que no hay nada que resolver.
-Pero ojo con la interacción con A2: si la flor es obligatoria y el que se va la
-tenía, ¿la pierde o la cobra? Decidilo junto con esta.
-
----
-
 ## Bloque B — Detectadas al leer el documento (no estaban anotadas)
-
-### B2. Cuántas veces se puede revirar el envido
-**Estado:** ABIERTA
-**El caso:** el documento dice "sobre un envido se puede decir envido de nuevo",
-y la tabla muestra `Envido, Envido` = 4. ¿Se admite un tercer envido? ¿Se admite
-`Envido, Envido, Real Envido`?
-**Recomendación:** máximo dos envidos acumulados; después solo Real Envido o
-Falta Envido. Es lo habitual y acota el árbol de estados.
-
-### B3. "Con flor envido": cuánto entrega el que no quiere
-**Estado:** ABIERTA
-**El caso:** el documento da el valor querido (5 tantos) y flaggea el no quiero
-de la Contra Flor al Resto, pero no el de Con Flor Envido.
-**Recomendación:** 3, los tantos de la flor que ya estaba cantada.
-
-### B4. Orden de resolución cuando quedan flor y truco pendientes
-**Estado:** ABIERTA
-**El caso:** el documento fija que el envido va antes que el truco, pero no dice
-lo mismo de la flor.
-**Recomendación:** flor antes que truco, misma lógica que el envido: se resuelve,
-se suman los tantos, y recién ahí se contesta el truco.
-
-### B5. Falta Envido cuando los dos equipos van iguales
-**Estado:** ABIERTA
-**El caso:** "los puntos que le faltan al equipo que va primero" no está definido
-si van empatados.
-**Recomendación:** con empate, la falta se cuenta contra ese puntaje común (da lo
-mismo qué equipo se tome). Verificá que el código no elija arbitrariamente el
-equipo 0.
-
-### B6. Cierre del partido a mitad de mano
-**Estado:** ABIERTA
-**El caso:** una mano puede repartir tantos de flor, de envido y de truco. Si los
-de flor ya cruzan la meta, ¿termina ahí o se juega la mano completa?
-**Recomendación:** el partido termina en el instante en que un equipo llega al
-objetivo. Eso obliga a definir el **orden de acreditación** de los tantos dentro
-de una mano: flor → envido → truco. Escribilo, porque decide partidas.
 
 ### B7. Irse al mazo en partidas de equipo
 **Estado:** ABIERTA
@@ -184,6 +103,67 @@ cada mano se reparte de forma determinista desde el estado (barajador con semill
 derivada de la base y el número de mano). Así se puede jugar y reproducir una
 partida entera desde un test. El corte del rival queda como acción futura; con
 barajado por semilla no hace falta para la equidad.
+
+### A1. Hasta qué momento se puede tocar el envido
+**Estado:** DECIDIDA (2026-08-09)
+**Decisión:** El envido se puede tocar durante la primera ronda, con gating por
+jugador: un jugador que **ya tiró** su carta de la primera baza no puede iniciar el
+envido; los que todavía no tiraron (incluidos sus compañeros) sí pueden. El reviro
+está siempre permitido: aunque ya hayas tirado, podés revirar un envido en curso. La
+ventana se cierra cuando termina la primera baza. En 1v1 se reduce a "el jugador en
+turno puede tocar antes de jugar su primera carta".
+
+### A2. ¿La flor es obligatoria?
+**Estado:** DECIDIDA (2026-08-09)
+**Decisión:** No es estrictamente obligatoria. Para cobrar los tantos hay que
+cantarla; si no la cantás, no los cobrás. Esconderla es válido, pero habilita que el
+otro equipo **denuncie** ("tenías flor"): si la denuncia es correcta, los tantos de
+la flor escondida pasan al equipo que denuncia. Interactúa con A5 (irse al mazo con
+flor no cantada: esa flor no vale para el que se va).
+
+### A3. Cuántos puntos entrega quien no quiere una Contra Flor al Resto
+**Estado:** DECIDIDA (2026-08-09)
+**Decisión:** 3 (una flor), igual que no querer Con Flor Envido. Ver B3.
+
+### A4. Falta Envido: ¿contra el final del partido o el final de las malas?
+**Estado:** DECIDIDA (2026-08-09)
+**Decisión:** Contra el fin de la etapa del equipo que va primero. Si el que va
+primero está en malas, la Falta vale los puntos que le faltan para llegar a la mitad
+(fin de las malas); si ya está en buenas, los que le faltan para ganar el partido.
+
+### A5. Qué pasa si el mano se va al mazo antes de tirar la primera carta
+**Estado:** DECIDIDA (2026-08-09) — afirmada para implementar, con posible revisión.
+**Decisión:** Se permite: entrega 1 punto (nada gritado) y la mano termina. Sobre la
+flor: si se va al mazo y él (o alguien de su equipo) tenía flor y **no la cantó**, esa
+flor no vale. Si tenía flor, **la canta y después se va**, son 3 de la flor y el punto
+de la mano va al rival por irse; pero si el rival responde que también tiene flor, se
+juegan las flores (enfrentamiento).
+
+### B2. Cuántas veces se puede revirar el envido
+**Estado:** DECIDIDA (2026-08-09)
+**Decisión:** Sin límite de reviros: se puede seguir tocando Envido / Real Envido
+hasta que alguien quiera o no quiera. La Falta Envido es terminal (no se sube más).
+
+### B3. "Con flor envido": cuánto entrega el que no quiere
+**Estado:** DECIDIDA (2026-08-09)
+**Decisión:** 3, los tantos de la flor que ya estaba cantada.
+
+### B4. Orden de resolución cuando quedan flor y truco pendientes
+**Estado:** DECIDIDA (2026-08-09)
+**Decisión:** La flor se resuelve antes que el truco, misma lógica que el envido: se
+resuelve, se suman los tantos, y recién ahí se contesta el truco.
+
+### B5. Falta Envido cuando los dos equipos van iguales
+**Estado:** DECIDIDA (2026-08-09)
+**Decisión:** Con empate de puntaje, ambos equipos tienen la misma Falta (da igual el
+equipo). En el desempate del envido (puntos de envido iguales) gana el mano, como en
+toda situación de empate.
+
+### B6. Cierre del partido a mitad de mano
+**Estado:** DECIDIDA (2026-08-09)
+**Decisión:** Orden de acreditación de tantos dentro de una mano: flor → envido →
+truco. El partido termina apenas un equipo llega al objetivo; si los tantos de flor ya
+cruzan la meta, la mano no se termina de jugar.
 
 ---
 
