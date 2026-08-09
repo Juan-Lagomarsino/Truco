@@ -10,3 +10,15 @@ public abstract record Accion;
 
 /// <summary>Un jugador tira una de sus cartas a la mesa.</summary>
 public sealed record TirarCarta(JugadorId Jugador, Carta Carta) : Accion;
+
+/// <summary>
+/// Un jugador grita truco (o lo revira al nivel siguiente: retruco, vale cuatro). El
+/// nivel concreto lo determina el estado; nunca se revira el propio canto.
+/// </summary>
+public sealed record CantarTruco(JugadorId Jugador) : Accion;
+
+/// <summary>Aceptar el canto pendiente.</summary>
+public sealed record Quiero(JugadorId Jugador) : Accion;
+
+/// <summary>Rechazar el canto pendiente: el que cantó se lleva el valor del último canto querido.</summary>
+public sealed record NoQuiero(JugadorId Jugador) : Accion;

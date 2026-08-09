@@ -41,8 +41,23 @@ public sealed record EstadoPartida
     /// <summary>De quién es el turno de jugar.</summary>
     public required JugadorId Turno { get; init; }
 
+    /// <summary>El nivel de truco querido en esta mano. Vale 1 mientras sea Nada.</summary>
+    public NivelTruco Truco { get; init; } = NivelTruco.Nada;
+
+    /// <summary>El nivel que se acaba de cantar y espera respuesta, o null si no hay canto pendiente.</summary>
+    public NivelTruco? TrucoPendiente { get; init; }
+
+    /// <summary>Cuando hay un canto pendiente, el equipo que tiene que responder.</summary>
+    public EquipoId? EquipoResponde { get; init; }
+
+    /// <summary>El equipo que puede revirar el truco (el que quiso el último canto). Null en Nada: puede empezar cualquiera en su turno.</summary>
+    public EquipoId? EquipoQuePuedeRevirar { get; init; }
+
     /// <summary>El partido terminó cuando un equipo llegó al largo.</summary>
     public bool Terminado => Contador.Termino;
+
+    /// <summary>Hay un canto esperando quiero / no quiero.</summary>
+    public bool HayCantoPendiente => TrucoPendiente is not null;
 
     /// <summary>El jugador mano de esta ronda: el que está seguido al repartidor.</summary>
     public JugadorId JugadorMano => new((Repartidor.Valor + 1) % CantidadJugadores);

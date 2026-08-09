@@ -54,8 +54,9 @@ public class PartidoTests
 
         var acciones = Partido.AccionesLegales(e, enTurno);
 
-        Assert.Equal(3, acciones.Count);
-        Assert.All(acciones, a => Assert.IsType<TirarCarta>(a));
+        // Una TirarCarta por carta, más la opción de cantar truco.
+        Assert.Equal(3, acciones.OfType<TirarCarta>().Count());
+        Assert.Contains(acciones, a => a is CantarTruco);
     }
 
     [Fact]

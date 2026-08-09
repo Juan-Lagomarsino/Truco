@@ -28,13 +28,36 @@ public static class Partido
     /// <summary>Las acciones que puede hacer <paramref name="jugador"/> en este momento.</summary>
     public static IReadOnlyList<Accion> AccionesLegales(EstadoPartida e, JugadorId jugador)
     {
-        if (e.Terminado || !jugador.Equals(e.Turno))
+        if (e.Terminado)
             return Array.Empty<Accion>();
 
-        return e.Manos[jugador.Valor]
+        // Con un canto pendiente, sólo responde el equipo al que le toca: quiero o no quiero.
+        if (e.HayCantoPendiente)
+        {
+            return e.EquipoDe(jugador) == e.EquipoResponde
+                ? new Accion[] { new Quiero(jugador), new NoQuiero(jugador) }
+                : Array.Empty<Accion>();
+        }
+
+        if (!jugador.Equals(e.Turno))
+            return Array.Empty<Accion>();
+
+        var acciones = e.Manos[jugador.Valor]
             .Select(carta => (Accion)new TirarCarta(jugador, carta))
             .ToList();
+
+        if (PuedeCantarTruco(e, jugador))
+            acciones.Add(new CantarTruco(jugador));
+
+        return acciones;
     }
+
+    // Se puede cantar/revirar el truco en tu turno, si no se llegó al vale cuatro, y sólo
+    // si arranca cualquiera (Nada) o tu equipo es el que quiso el canto anterior.
+    private static bool PuedeCantarTruco(EstadoPartida e, JugadorId jugador) =>
+        jugador.Equals(e.Turno)
+        && e.Truco != NivelTruco.ValeCuatro
+        && (e.EquipoQuePuedeRevirar is null || e.EquipoDe(jugador) == e.EquipoQuePuedeRevirar);
 
     /// <summary>Aplica una acción y devuelve el estado nuevo. Lanza si la acción es ilegal.</summary>
     public static EstadoPartida Aplicar(EstadoPartida e, Accion accion)
@@ -45,12 +68,63 @@ public static class Partido
         return accion switch
         {
             TirarCarta t => AplicarTirar(e, t),
+            CantarTruco c => AplicarCantarTruco(e, c),
+            Quiero q => AplicarQuiero(e, q),
+            NoQuiero n => AplicarNoQuiero(e, n),
             _ => throw new ArgumentException($"Acción no soportada: {accion.GetType().Name}.", nameof(accion)),
         };
     }
 
+    private static EstadoPartida AplicarCantarTruco(EstadoPartida e, CantarTruco c)
+    {
+        if (e.HayCantoPendiente)
+            throw new InvalidOperationException("Ya hay un canto esperando respuesta.");
+        if (!PuedeCantarTruco(e, c.Jugador))
+            throw new InvalidOperationException($"El jugador {c.Jugador.Valor} no puede cantar truco ahora.");
+
+        // Propone el nivel siguiente; responde el equipo rival.
+        return e with
+        {
+            TrucoPendiente = SiguienteNivel(e.Truco),
+            EquipoResponde = OtroEquipo(e.EquipoDe(c.Jugador)),
+        };
+    }
+
+    private static EstadoPartida AplicarQuiero(EstadoPartida e, Quiero q)
+    {
+        ValidarRespuesta(e, q.Jugador);
+
+        // El canto queda querido y el equipo que quiso pasa a ser el que puede revirar.
+        return e with
+        {
+            Truco = e.TrucoPendiente!.Value,
+            TrucoPendiente = null,
+            EquipoResponde = null,
+            EquipoQuePuedeRevirar = e.EquipoDe(q.Jugador),
+        };
+    }
+
+    private static EstadoPartida AplicarNoQuiero(EstadoPartida e, NoQuiero n)
+    {
+        ValidarRespuesta(e, n.Jugador);
+
+        // El que cantó (el rival del que responde) se lleva el valor del último canto querido.
+        var ganador = OtroEquipo(e.EquipoDe(n.Jugador));
+        return CerrarMano(e, ganador, ValorTruco(e.Truco));
+    }
+
+    private static void ValidarRespuesta(EstadoPartida e, JugadorId jugador)
+    {
+        if (!e.HayCantoPendiente)
+            throw new InvalidOperationException("No hay ningún canto para responder.");
+        if (e.EquipoDe(jugador) != e.EquipoResponde)
+            throw new InvalidOperationException($"El jugador {jugador.Valor} no es quien tiene que responder.");
+    }
+
     private static EstadoPartida AplicarTirar(EstadoPartida e, TirarCarta t)
     {
+        if (e.HayCantoPendiente)
+            throw new InvalidOperationException("Hay un canto sin responder; no se puede tirar carta.");
         if (!t.Jugador.Equals(e.Turno))
             throw new InvalidOperationException($"No es el turno del jugador {t.Jugador.Valor}.");
         if (!e.Manos[t.Jugador.Valor].Contains(t.Carta))
@@ -73,7 +147,10 @@ public static class Partido
         var resultadoMano = Mano.Resolver(bazasGanadas, e.EquipoDe(e.JugadorMano));
 
         if (resultadoMano.EstaDefinida)
-            return CerrarMano(e, manos, bazasGanadas, resultadoMano.Ganador);
+        {
+            var eTrasBaza = e with { Manos = manos, BazasGanadas = bazasGanadas, JugadasBaza = new List<Jugada>() };
+            return CerrarMano(eTrasBaza, resultadoMano.Ganador, ValorTruco(e.Truco));
+        }
 
         // La mano sigue: la próxima baza la abre el ganador, o el mano si fue parda (D2).
         var abridor = resultado.EsParda ? e.JugadorMano : jugadas[resultado.Ganador].Jugador;
@@ -87,16 +164,14 @@ public static class Partido
         };
     }
 
-    // Cierra la mano: acredita el punto del truco liso y reparte la siguiente, salvo que
-    // el partido haya terminado.
-    private static EstadoPartida CerrarMano(
-        EstadoPartida e, IReadOnlyList<IReadOnlyList<Carta>> manos,
-        IReadOnlyList<GanadorBaza> bazasGanadas, EquipoId ganador)
+    // Cierra la mano: acredita los puntos al ganador y reparte la siguiente, salvo que el
+    // partido haya terminado.
+    private static EstadoPartida CerrarMano(EstadoPartida e, EquipoId ganador, int puntos)
     {
-        var contador = e.Contador.Sumar(ganador, 1);
+        var contador = e.Contador.Sumar(ganador, puntos);
 
         if (contador.Termino)
-            return e with { Manos = manos, BazasGanadas = bazasGanadas, JugadasBaza = new List<Jugada>(), Contador = contador };
+            return e with { Contador = contador };
 
         return RepartirMano(
             numeroDeMano: e.NumeroDeMano + 1,
@@ -140,6 +215,19 @@ public static class Partido
 
     private static JugadorId Siguiente(JugadorId jugador, int cantidadJugadores) =>
         new((jugador.Valor + 1) % cantidadJugadores);
+
+    // El otro equipo (siempre son dos: 0 y 1).
+    private static EquipoId OtroEquipo(EquipoId equipo) => new(1 - equipo.Valor);
+
+    private static int ValorTruco(NivelTruco nivel) => (int)nivel;
+
+    private static NivelTruco SiguienteNivel(NivelTruco nivel) => nivel switch
+    {
+        NivelTruco.Nada => NivelTruco.Truco,
+        NivelTruco.Truco => NivelTruco.Retruco,
+        NivelTruco.Retruco => NivelTruco.ValeCuatro,
+        _ => throw new InvalidOperationException("El vale cuatro no se puede revirar."),
+    };
 
     // Semilla determinista por mano: la base combinada con el número de mano.
     private static int SemillaDeMano(int semilla, int numeroDeMano) => unchecked(semilla + numeroDeMano);
