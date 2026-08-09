@@ -31,6 +31,14 @@ public static class Partido
         if (e.Terminado)
             return Array.Empty<Accion>();
 
+        // Ventana de cierre: denuncias de flor escondida antes de acreditar y repartir.
+        if (e.Cierre is not null)
+        {
+            return e.DenunciasPendientes.Any(j => j.Equals(jugador))
+                ? new Accion[] { new DenunciarFlor(jugador), new Pasar(jugador) }
+                : Array.Empty<Accion>();
+        }
+
         // Un bid de flor pendiente tiene la máxima prioridad: sólo responde el rival con flor.
         if (e.HayFlorPendiente)
         {
@@ -141,9 +149,14 @@ public static class Partido
         if (e.Terminado)
             throw new InvalidOperationException("El partido ya terminó.");
 
+        if (e.Cierre is not null && accion is not (DenunciarFlor or Pasar))
+            throw new InvalidOperationException("La mano está en la ventana de cierre: sólo denunciar o pasar.");
+
         return accion switch
         {
             TirarCarta t => AplicarTirar(e, t),
+            DenunciarFlor d => AplicarDenunciarFlor(e, d),
+            Pasar p => AplicarPasar(e, p),
             CantarFlor cf => AplicarCantarFlor(e, cf),
             CantarFlorEnvido cfe => AplicarBidFlor(e, cfe.Jugador, esContra: false),
             CantarContraFlorAlResto cc => AplicarBidFlor(e, cc.Jugador, esContra: true),
@@ -165,7 +178,71 @@ public static class Partido
 
         // El rival se lleva lo que valía la mano (1, o el último truco querido).
         var rival = OtroEquipo(e.EquipoDe(im.Jugador));
-        return CerrarMano(e, rival, ValorTruco(e.Truco));
+        return TerminarMano(e, rival, ValorTruco(e.Truco));
+    }
+
+    // Antes de acreditar, abre la ventana de denuncias si hay flor escondida; si no, cierra directo.
+    private static EstadoPartida TerminarMano(EstadoPartida e, EquipoId ganadorTruco, int puntosTruco)
+    {
+        var reclamadores = Reclamadores(e);
+        if (reclamadores.Count == 0)
+            return CerrarMano(e, ganadorTruco, puntosTruco);
+
+        return e with
+        {
+            Cierre = new CierrePendiente(ganadorTruco, puntosTruco),
+            DenunciasPendientes = reclamadores,
+        };
+    }
+
+    // Jugadores cuyo rival tenía flor y no la cantó (flor escondida reclamable). Si se cantó
+    // flor no hay nada escondido. Es 1v1: el rival es el otro jugador.
+    private static IReadOnlyList<JugadorId> Reclamadores(EstadoPartida e)
+    {
+        if (e.FlorResuelta) return Array.Empty<JugadorId>();
+
+        var reclamadores = new List<JugadorId>();
+        for (int j = 0; j < e.CantidadJugadores; j++)
+        {
+            var rival = new JugadorId((j + 1) % e.CantidadJugadores);
+            if (Flor.Hay(e.ManosIniciales[rival.Valor], e.Muestra))
+                reclamadores.Add(new JugadorId(j));
+        }
+        return reclamadores;
+    }
+
+    private static EstadoPartida AplicarDenunciarFlor(EstadoPartida e, DenunciarFlor d)
+    {
+        if (e.Cierre is null || !e.DenunciasPendientes.Any(j => j.Equals(d.Jugador)))
+            throw new InvalidOperationException("No hay una flor escondida para denunciar ahora.");
+
+        // La flor escondida (3) pasa al que denuncia. Estamos en el cierre: se acredita ya.
+        var contador = e.Contador.Sumar(e.EquipoDe(d.Jugador), 3);
+        var pendientes = e.DenunciasPendientes.Where(j => !j.Equals(d.Jugador)).ToList();
+
+        if (contador.Termino)
+            return e with { Contador = contador, Cierre = null, DenunciasPendientes = Array.Empty<JugadorId>() };
+
+        return FinalizarCierre(e with { Contador = contador, DenunciasPendientes = pendientes });
+    }
+
+    private static EstadoPartida AplicarPasar(EstadoPartida e, Pasar p)
+    {
+        if (e.Cierre is null || !e.DenunciasPendientes.Any(j => j.Equals(p.Jugador)))
+            throw new InvalidOperationException("No hay nada que pasar ahora.");
+
+        var pendientes = e.DenunciasPendientes.Where(j => !j.Equals(p.Jugador)).ToList();
+        return FinalizarCierre(e with { DenunciasPendientes = pendientes });
+    }
+
+    // Cuando ya nadie puede denunciar, cierra la mano con el resultado de truco guardado.
+    private static EstadoPartida FinalizarCierre(EstadoPartida e)
+    {
+        if (e.DenunciasPendientes.Count > 0)
+            return e;
+
+        var cierre = e.Cierre!;
+        return CerrarMano(e with { Cierre = null }, cierre.GanadorTruco, cierre.PuntosTruco);
     }
 
     private static EstadoPartida AplicarCantarFlor(EstadoPartida e, CantarFlor cf)
@@ -336,7 +413,7 @@ public static class Partido
 
         // El que cantó (el rival del que responde) se lleva el valor del último canto querido.
         var ganador = OtroEquipo(e.EquipoDe(n.Jugador));
-        return CerrarMano(e, ganador, ValorTruco(e.Truco));
+        return TerminarMano(e, ganador, ValorTruco(e.Truco));
     }
 
     // Resuelve el envido pendiente: si se quiere, gana el de más puntos (empate: el mano);
@@ -395,7 +472,7 @@ public static class Partido
         if (resultadoMano.EstaDefinida)
         {
             var eTrasBaza = e with { Manos = manos, BazasGanadas = bazasGanadas, JugadasBaza = new List<Jugada>() };
-            return CerrarMano(eTrasBaza, resultadoMano.Ganador, ValorTruco(e.Truco));
+            return TerminarMano(eTrasBaza, resultadoMano.Ganador, ValorTruco(e.Truco));
         }
 
         // La mano sigue: la próxima baza la abre el ganador, o el mano si fue parda (D2).

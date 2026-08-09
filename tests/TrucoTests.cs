@@ -45,7 +45,7 @@ public class TrucoTests
         var e = EstadoConManos(
             new Muestra(C(6, Palo.Basto)),
             mano0: new[] { C(1, Palo.Espada), C(1, Palo.Basto), C(4, Palo.Oro) },
-            mano1: new[] { C(4, Palo.Copa), C(5, Palo.Copa), C(6, Palo.Copa) },
+            mano1: new[] { C(4, Palo.Copa), C(5, Palo.Oro), C(3, Palo.Basto) }, // sin flor
             repartidor: J0); // mano = J1, Turno = J1
 
         var e1 = Partido.Aplicar(e, new CantarTruco(J1)); // canta el equipo 1
@@ -126,7 +126,7 @@ public class TrucoTests
         var e = EstadoConManos(
             new Muestra(C(6, Palo.Basto)),
             mano0: new[] { C(1, Palo.Espada), C(1, Palo.Basto), C(4, Palo.Oro) }, // J0 gana las dos
-            mano1: new[] { C(4, Palo.Copa), C(5, Palo.Copa), C(6, Palo.Copa) },
+            mano1: new[] { C(4, Palo.Copa), C(5, Palo.Oro), C(3, Palo.Basto) }, // sin flor
             repartidor: J0); // Turno = J1
 
         var e1 = Partido.Aplicar(e, new CantarTruco(J1));  // truco
@@ -136,7 +136,7 @@ public class TrucoTests
         var e4 = Partido.Aplicar(e3, new TirarCarta(J0, C(1, Palo.Espada)));
         // Baza 2: J0 abre y gana con la 1 de Basto.
         var e5 = Partido.Aplicar(e4, new TirarCarta(J0, C(1, Palo.Basto)));
-        var e6 = Partido.Aplicar(e5, new TirarCarta(J1, C(5, Palo.Copa)));
+        var e6 = Partido.Aplicar(e5, new TirarCarta(J1, C(5, Palo.Oro)));
 
         Assert.Equal(2, e6.Contador.Puntos(E0));
     }

@@ -40,3 +40,9 @@ public sealed record NoQuiero(JugadorId Jugador) : Accion;
 /// querido) y la mano termina. En equipo se va todo el equipo del que se va (B7).
 /// </summary>
 public sealed record IrseAlMazo(JugadorId Jugador) : Accion;
+
+/// <summary>Reclamar la flor escondida del rival al cerrar la mano: los 3 pasan al que denuncia (F3).</summary>
+public sealed record DenunciarFlor(JugadorId Jugador) : Accion;
+
+/// <summary>En la ventana de cierre, no denunciar (dejar pasar la flor escondida del rival).</summary>
+public sealed record Pasar(JugadorId Jugador) : Accion;

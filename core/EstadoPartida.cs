@@ -74,6 +74,12 @@ public sealed record EstadoPartida
     /// <summary>Un bid de flor (Con Flor Envido / Contra Flor al Resto) esperando respuesta.</summary>
     public EstadoFlorBid? FlorPendiente { get; init; }
 
+    /// <summary>La mano está en la ventana de cierre (denuncias de flor escondida) antes de acreditar.</summary>
+    public CierrePendiente? Cierre { get; init; }
+
+    /// <summary>En la ventana de cierre, los jugadores que todavía pueden denunciar o pasar.</summary>
+    public IReadOnlyList<JugadorId> DenunciasPendientes { get; init; } = Array.Empty<JugadorId>();
+
     /// <summary>El partido terminó cuando un equipo llegó al largo.</summary>
     public bool Terminado => Contador.Termino;
 

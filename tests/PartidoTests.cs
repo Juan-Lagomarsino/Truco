@@ -151,7 +151,7 @@ public class PartidoTests
         var e = EstadoConManos(
             muestra,
             mano0: new[] { C(1, Palo.Espada), C(1, Palo.Basto), C(4, Palo.Oro) }, // dos matas
-            mano1: new[] { C(4, Palo.Copa), C(5, Palo.Copa), C(6, Palo.Copa) },
+            mano1: new[] { C(4, Palo.Copa), C(5, Palo.Oro), C(3, Palo.Basto) },  // débil, sin flor
             repartidor: J0); // mano = J1 abre
 
         // Baza 1: J1 tira débil, J0 gana con 1 de Espada.
@@ -159,7 +159,7 @@ public class PartidoTests
         var e2 = Partido.Aplicar(e1, new TirarCarta(J0, C(1, Palo.Espada)));
         // Baza 2: abre J0, gana con 1 de Basto.
         var e3 = Partido.Aplicar(e2, new TirarCarta(J0, C(1, Palo.Basto)));
-        var e4 = Partido.Aplicar(e3, new TirarCarta(J1, C(5, Palo.Copa)));
+        var e4 = Partido.Aplicar(e3, new TirarCarta(J1, C(5, Palo.Oro)));
 
         // J0 ganó la mano (equipo 0) y suma 1. Se repartió la mano siguiente.
         Assert.Equal(1, e4.Contador.Puntos(new EquipoId(0)));
@@ -198,8 +198,14 @@ public class PartidoTests
         {
             Assert.True(pasos++ < 5000, "La partida no debería tardar tanto en terminar.");
 
-            var legales = Partido.AccionesLegales(e, e.Turno);
-            Assert.NotEmpty(legales); // invariante: nunca vacía para el jugador en turno
+            // Actúa quien tenga acciones: el jugador en turno, o el que responde/denuncia.
+            IReadOnlyList<Accion> legales = Array.Empty<Accion>();
+            for (int j = 0; j < e.CantidadJugadores; j++)
+            {
+                legales = Partido.AccionesLegales(e, new JugadorId(j));
+                if (legales.Count > 0) break;
+            }
+            Assert.NotEmpty(legales); // invariante: siempre hay alguien que puede jugar
 
             e = Partido.Aplicar(e, legales[0]);
 
