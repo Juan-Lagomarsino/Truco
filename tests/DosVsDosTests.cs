@@ -74,9 +74,28 @@ public class DosVsDosTests
         Assert.Equal(1, e8.NumeroDeMano);         // se repartió la siguiente
     }
 
+    // 16c: el envido lo juega el mejor de cada equipo.
+    [Fact]
+    public void ElEnvido_LoJuegaElMejorDeCadaEquipo()
+    {
+        // Muestra 6 de Basto (sin piezas en estas manos). El equipo 0 tiene el 31 de J0.
+        var muestra = new Muestra(C(6, Palo.Basto));
+        var e = Estado(
+            mano0: new[] { C(6, Palo.Oro), C(5, Palo.Oro), C(2, Palo.Copa) },   // envido 31
+            mano1: new[] { C(7, Palo.Espada), C(4, Palo.Oro), C(3, Palo.Copa) }, // envido 7
+            mano2: new[] { C(4, Palo.Copa), C(5, Palo.Espada), C(3, Palo.Oro) }, // envido 5
+            mano3: new[] { C(6, Palo.Copa), C(4, Palo.Espada), C(3, Palo.Oro) }, // envido 6
+            repartidor: J0, muestra: muestra);
+
+        var e1 = Partido.Aplicar(e, new CantarEnvido(J1, EnvidoCanto.Envido)); // canta el mano (equipo 1)
+        var e2 = Partido.Aplicar(e1, new Quiero(J0)); // responde el equipo 0
+
+        Assert.Equal(new Cobro(E0, 2), e2.CobroEnvido); // el 31 del equipo 0 le gana al 7 del 1
+    }
+
     private static EstadoPartida Estado(
         IReadOnlyList<Carta> mano0, IReadOnlyList<Carta> mano1,
-        IReadOnlyList<Carta> mano2, IReadOnlyList<Carta> mano3, JugadorId repartidor)
+        IReadOnlyList<Carta> mano2, IReadOnlyList<Carta> mano3, JugadorId repartidor, Muestra? muestra = null)
     {
         var mano = new JugadorId((repartidor.Valor + 1) % 4);
         var manos = new[] { mano0, mano1, mano2, mano3 };
@@ -87,7 +106,7 @@ public class DosVsDosTests
             NumeroDeMano = 0,
             CantidadJugadores = 4,
             Repartidor = repartidor,
-            Muestra = MuestraNeutra,
+            Muestra = muestra ?? MuestraNeutra,
             Manos = manos,
             ManosIniciales = manos,
             BazasGanadas = new List<GanadorBaza>(),

@@ -575,15 +575,26 @@ public static class Partido
         return lider < contador.Mitad ? contador.Mitad - lider : contador.Largo - lider;
     }
 
-    // Quién gana el envido: el de más puntos; empate, el mano. (1v1: dos manos iniciales.)
+    // Quién gana el envido: el equipo con más puntos (cada equipo juega su mejor mano);
+    // empate, el equipo mano (B8).
     private static EquipoId EnvidoGanador(EstadoPartida e)
     {
-        int env0 = EnvidoParaComparar(e.ManosIniciales[0], e.Muestra);
-        int env1 = EnvidoParaComparar(e.ManosIniciales[1], e.Muestra);
+        int env0 = EnvidoDeEquipo(e, new EquipoId(0));
+        int env1 = EnvidoDeEquipo(e, new EquipoId(1));
 
         if (env0 > env1) return new EquipoId(0);
         if (env1 > env0) return new EquipoId(1);
-        return e.EquipoDe(e.JugadorMano); // empate: gana el mano
+        return e.EquipoDe(e.JugadorMano); // empate: gana el equipo mano
+    }
+
+    // El envido de un equipo es el mejor de sus jugadores.
+    private static int EnvidoDeEquipo(EstadoPartida e, EquipoId equipo)
+    {
+        int mejor = -1;
+        for (int j = 0; j < e.CantidadJugadores; j++)
+            if (e.EquipoDe(new JugadorId(j)) == equipo)
+                mejor = Math.Max(mejor, EnvidoParaComparar(e.ManosIniciales[j], e.Muestra));
+        return mejor;
     }
 
     // Interino (Paso 13): una mano con flor (2+ piezas) no tiene envido definido; se la
