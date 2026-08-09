@@ -202,12 +202,9 @@ public static class Partido
         if (e.FlorResuelta) return Array.Empty<JugadorId>();
 
         var reclamadores = new List<JugadorId>();
-        for (int j = 0; j < e.CantidadJugadores; j++)
-        {
-            var jugador = new JugadorId(j);
+        foreach (var jugador in JugadoresActivos(e))
             if (FloresDeEquipo(e, OtroEquipo(e.EquipoDe(jugador))) > 0)
                 reclamadores.Add(jugador);
-        }
         return reclamadores;
     }
 
@@ -341,9 +338,9 @@ public static class Partido
     private static int FlorMaximaDeEquipo(EstadoPartida e, EquipoId equipo)
     {
         int mejor = -1;
-        for (int j = 0; j < e.CantidadJugadores; j++)
-            if (e.EquipoDe(new JugadorId(j)) == equipo)
-                mejor = Math.Max(mejor, FlorParaComparar(e.ManosIniciales[j], e.Muestra));
+        foreach (var jugador in JugadoresActivos(e))
+            if (e.EquipoDe(jugador) == equipo)
+                mejor = Math.Max(mejor, FlorParaComparar(e.ManosIniciales[jugador.Valor], e.Muestra));
         return mejor;
     }
 
@@ -351,8 +348,8 @@ public static class Partido
     private static int FloresDeEquipo(EstadoPartida e, EquipoId equipo)
     {
         int n = 0;
-        for (int j = 0; j < e.CantidadJugadores; j++)
-            if (e.EquipoDe(new JugadorId(j)) == equipo && Flor.Hay(e.ManosIniciales[j], e.Muestra))
+        foreach (var jugador in JugadoresActivos(e))
+            if (e.EquipoDe(jugador) == equipo && Flor.Hay(e.ManosIniciales[jugador.Valor], e.Muestra))
                 n++;
         return n;
     }
@@ -361,7 +358,7 @@ public static class Partido
         Flor.Hay(mano, muestra) ? Flor.De(mano, muestra) : -1;
 
     private static int FloresEnJuego(EstadoPartida e) =>
-        e.ManosIniciales.Count(m => Flor.Hay(m, e.Muestra));
+        JugadoresActivos(e).Count(j => Flor.Hay(e.ManosIniciales[j.Valor], e.Muestra));
 
     private static EstadoPartida AplicarCantarEnvido(EstadoPartida e, CantarEnvido ce)
     {
@@ -482,9 +479,9 @@ public static class Partido
         var manos = SacarCarta(e.Manos, t.Jugador, t.Carta);
         var jugadas = e.JugadasBaza.Append(new Jugada(t.Jugador, t.Carta)).ToList();
 
-        // La baza sigue: pasa el turno al siguiente jugador.
-        if (jugadas.Count < e.CantidadJugadores)
-            return e with { Manos = manos, JugadasBaza = jugadas, Turno = Siguiente(t.Jugador, e.CantidadJugadores) };
+        // La baza sigue: pasa el turno al siguiente jugador activo.
+        if (jugadas.Count < JugadoresActivos(e).Count)
+            return e with { Manos = manos, JugadasBaza = jugadas, Turno = SiguienteActivo(e, t.Jugador) };
 
         // Baza completa: resolverla por equipo.
         var resultado = Baza.Resolver(
@@ -579,6 +576,25 @@ public static class Partido
     private static JugadorId Siguiente(JugadorId jugador, int cantidadJugadores) =>
         new((jugador.Valor + 1) % cantidadJugadores);
 
+    // Los jugadores que participan de la mano, en orden de asiento. Vacío = todos.
+    private static IReadOnlyList<JugadorId> JugadoresActivos(EstadoPartida e)
+    {
+        if (e.Activos.Count > 0) return e.Activos;
+        var todos = new JugadorId[e.CantidadJugadores];
+        for (int j = 0; j < e.CantidadJugadores; j++) todos[j] = new JugadorId(j);
+        return todos;
+    }
+
+    // El siguiente jugador activo, en orden de asiento (envuelve).
+    private static JugadorId SiguienteActivo(EstadoPartida e, JugadorId jugador)
+    {
+        var activos = JugadoresActivos(e);
+        int idx = 0;
+        for (int i = 0; i < activos.Count; i++)
+            if (activos[i].Equals(jugador)) { idx = i; break; }
+        return activos[(idx + 1) % activos.Count];
+    }
+
     // El otro equipo (siempre son dos: 0 y 1).
     private static EquipoId OtroEquipo(EquipoId equipo) => new(1 - equipo.Valor);
 
@@ -613,13 +629,13 @@ public static class Partido
         return e.EquipoDe(e.JugadorMano); // empate: gana el equipo mano
     }
 
-    // El envido de un equipo es el mejor de sus jugadores.
+    // El envido de un equipo es el mejor de sus jugadores activos.
     private static int EnvidoDeEquipo(EstadoPartida e, EquipoId equipo)
     {
         int mejor = -1;
-        for (int j = 0; j < e.CantidadJugadores; j++)
-            if (e.EquipoDe(new JugadorId(j)) == equipo)
-                mejor = Math.Max(mejor, EnvidoParaComparar(e.ManosIniciales[j], e.Muestra));
+        foreach (var jugador in JugadoresActivos(e))
+            if (e.EquipoDe(jugador) == equipo)
+                mejor = Math.Max(mejor, EnvidoParaComparar(e.ManosIniciales[jugador.Valor], e.Muestra));
         return mejor;
     }
 

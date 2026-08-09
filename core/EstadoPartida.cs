@@ -32,6 +32,12 @@ public sealed record EstadoPartida
     /// <summary>Las tres cartas con que arrancó la mano cada jugador. El envido y la flor se cuentan sobre éstas, no sobre lo que queda.</summary>
     public IReadOnlyList<IReadOnlyList<Carta>> ManosIniciales { get; init; } = Array.Empty<IReadOnlyList<Carta>>();
 
+    /// <summary>
+    /// Los jugadores que participan de esta mano, en orden de asiento. Vacío = todos
+    /// (redondilla, 1v1, 2v2, 3v3). En un pico a pico del modo de a 6 sólo juega la pareja.
+    /// </summary>
+    public IReadOnlyList<JugadorId> Activos { get; init; } = Array.Empty<JugadorId>();
+
     /// <summary>Resultado de las bazas ya cerradas en esta mano.</summary>
     public required IReadOnlyList<GanadorBaza> BazasGanadas { get; init; }
 
