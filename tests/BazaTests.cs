@@ -2,102 +2,106 @@ using Domain;
 
 namespace Tests;
 
-// Paso 5 — Resolución de una baza (una ronda de cartas sobre la mesa).
-// RULES_Afinadas.md §"Como se resuelve la mano": "El que tiró la carta más alta
-// gana la ronda". Empate de fuerza = parda.
-//
-// Alcance: resolución por carta (gana la más fuerte, empate arriba = parda). Es
-// correcto para 1v1. El matiz de equipos (dos cartas máximas del mismo equipo
-// ganan en vez de empardar) se agrega en el Paso 16.
+// Paso 5 + 16a — Resolución de una baza por equipo.
+// RULES_Afinadas.md §"Como se resuelve la mano": gana la carta más alta; su equipo se
+// lleva la baza. Si el máximo de fuerza lo comparten equipos distintos, es parda; si lo
+// comparten dos del mismo equipo, gana ese equipo (no es parda).
 public class BazaTests
 {
-    private static readonly Muestra MuestraNeutra = new(new Carta(6, Palo.Oro)); // no pieza, no toca 3/mata
+    private static readonly EquipoId E0 = new(0);
+    private static readonly EquipoId E1 = new(1);
+
+    private static readonly Muestra MuestraNeutra = new(new Carta(6, Palo.Oro)); // no pieza
+
+    private static Carta C(int n, Palo p) => new(n, p);
 
     [Fact]
     public void LaCartaMasFuerte_GanaLaBaza()
     {
-        // 1 de Espada (mata, nivel 6) le gana al 7 de Oro (mata, nivel 9).
-        var jugadas = new[] { new Carta(1, Palo.Espada), new Carta(7, Palo.Oro) };
+        // 1 de Espada (mata) le gana al 7 de Oro (mata más baja).
+        var jugadas = new[] { (C(1, Palo.Espada), E0), (C(7, Palo.Oro), E1) };
 
-        var resultado = Baza.Resolver(jugadas, MuestraNeutra);
+        var r = Baza.Resolver(jugadas, MuestraNeutra);
 
-        Assert.False(resultado.EsParda);
-        Assert.Equal(0, resultado.Ganador);
+        Assert.False(r.EsParda);
+        Assert.Equal(0, r.Ganador); // ganó la jugada 0 (equipo 0)
     }
 
     [Fact]
     public void ElOrdenDeJuego_NoCambiaQuienGana()
     {
-        var jugadas = new[] { new Carta(7, Palo.Oro), new Carta(1, Palo.Espada) };
+        var jugadas = new[] { (C(7, Palo.Oro), E0), (C(1, Palo.Espada), E1) };
 
-        var resultado = Baza.Resolver(jugadas, MuestraNeutra);
+        var r = Baza.Resolver(jugadas, MuestraNeutra);
 
-        Assert.Equal(1, resultado.Ganador); // gana la 1 de Espada, ahora en la posición 1
+        Assert.Equal(1, r.Ganador); // gana la 1 de Espada, ahora en la posición 1
     }
 
     [Fact]
     public void LaPieza_LeGanaAUnaMata()
     {
-        // Con muestra 2 de Oro, el 4 de Oro es pieza (nivel 2) y le gana a la 1 de Espada.
-        var muestra = new Muestra(new Carta(2, Palo.Oro));
-        var jugadas = new[] { new Carta(4, Palo.Oro), new Carta(1, Palo.Espada) };
+        var muestra = new Muestra(C(2, Palo.Oro)); // el 4 de Oro es pieza
+        var jugadas = new[] { (C(4, Palo.Oro), E0), (C(1, Palo.Espada), E1) };
 
-        var resultado = Baza.Resolver(jugadas, muestra);
+        var r = Baza.Resolver(jugadas, muestra);
 
-        Assert.Equal(0, resultado.Ganador);
+        Assert.Equal(0, r.Ganador);
     }
 
     [Fact]
-    public void EmpateDeFuerza_EsParda()
+    public void EmpateEntreEquiposDistintos_EsParda()
     {
-        // 3 de Oro y 3 de Basto están las dos en el nivel 10.
-        var jugadas = new[] { new Carta(3, Palo.Oro), new Carta(3, Palo.Basto) };
+        // 3 de Oro y 3 de Copa: mismo nivel, equipos distintos → parda.
+        var jugadas = new[] { (C(3, Palo.Oro), E0), (C(3, Palo.Copa), E1) };
 
-        var resultado = Baza.Resolver(jugadas, MuestraNeutra);
+        var r = Baza.Resolver(jugadas, MuestraNeutra);
 
-        Assert.True(resultado.EsParda);
+        Assert.True(r.EsParda);
     }
 
     [Fact]
     public void UnaParda_NoTieneGanador()
     {
-        var jugadas = new[] { new Carta(3, Palo.Oro), new Carta(3, Palo.Basto) };
+        var jugadas = new[] { (C(3, Palo.Oro), E0), (C(3, Palo.Copa), E1) };
 
-        var resultado = Baza.Resolver(jugadas, MuestraNeutra);
+        var r = Baza.Resolver(jugadas, MuestraNeutra);
 
-        Assert.Throws<InvalidOperationException>(() => _ = resultado.Ganador);
+        Assert.Throws<InvalidOperationException>(() => _ = r.Ganador);
+    }
+
+    // 16a: el caso central del 2v2. Dos cartas máximas del mismo equipo → gana el equipo.
+    [Fact]
+    public void EmpateArribaDelMismoEquipo_GanaEseEquipo_NoEsParda()
+    {
+        // 3 de Oro y 3 de Copa (mismo nivel) son del equipo 0; el rival tiró más bajo.
+        var jugadas = new[]
+        {
+            (C(3, Palo.Oro), E0),
+            (C(5, Palo.Copa), E1),
+            (C(3, Palo.Copa), E0),
+            (C(4, Palo.Basto), E1),
+        };
+
+        var r = Baza.Resolver(jugadas, MuestraNeutra);
+
+        Assert.False(r.EsParda);
+        Assert.Equal(E0, jugadas[r.Ganador].Item2); // ganó el equipo 0
     }
 
     [Fact]
     public void ConVariasCartas_GanaLaMasFuerte()
     {
-        // Cuatro cartas; la 1 de Basto (mata, nivel 7) es la más fuerte.
+        // La 1 de Basto (mata) es la más fuerte.
         var jugadas = new[]
         {
-            new Carta(4, Palo.Copa),
-            new Carta(1, Palo.Basto),
-            new Carta(7, Palo.Espada),
-            new Carta(6, Palo.Oro),
+            (C(4, Palo.Copa), E0),
+            (C(1, Palo.Basto), E1),
+            (C(7, Palo.Espada), E0),
+            (C(6, Palo.Oro), E1),
         };
 
-        var resultado = Baza.Resolver(jugadas, MuestraNeutra);
+        var r = Baza.Resolver(jugadas, MuestraNeutra);
 
-        Assert.Equal(1, resultado.Ganador);
-    }
-
-    [Fact]
-    public void ConVariasCartas_SiElMaximoEstaEmpatado_EsParda()
-    {
-        // Dos 3 empatan arriba; la tercera es más débil.
-        var jugadas = new[]
-        {
-            new Carta(3, Palo.Copa),
-            new Carta(3, Palo.Basto),
-            new Carta(5, Palo.Copa),
-        };
-
-        var resultado = Baza.Resolver(jugadas, MuestraNeutra);
-
-        Assert.True(resultado.EsParda);
+        Assert.Equal(1, r.Ganador);
     }
 }

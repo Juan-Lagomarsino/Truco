@@ -460,8 +460,9 @@ public static class Partido
         if (jugadas.Count < e.CantidadJugadores)
             return e with { Manos = manos, JugadasBaza = jugadas, Turno = Siguiente(t.Jugador, e.CantidadJugadores) };
 
-        // Baza completa: resolverla.
-        var resultado = Baza.Resolver(jugadas.Select(j => j.Carta).ToList(), e.Muestra);
+        // Baza completa: resolverla por equipo.
+        var resultado = Baza.Resolver(
+            jugadas.Select(j => (j.Carta, e.EquipoDe(j.Jugador))).ToList(), e.Muestra);
         var ganadorBaza = resultado.EsParda
             ? GanadorBaza.Parda
             : GanadorBaza.De(e.EquipoDe(jugadas[resultado.Ganador].Jugador));

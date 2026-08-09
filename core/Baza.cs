@@ -1,45 +1,52 @@
 namespace Domain;
 
 /// <summary>
-/// Resuelve una baza: dadas las cartas que se tiraron a la mesa, dice cuál ganó.
-/// RULES_Afinadas.md §"Como se resuelve la mano": gana la carta más alta; si el
-/// máximo de fuerza está empatado, la baza es parda.
-///
-/// Alcance: resolución por carta, correcta para 1v1. El caso de equipos (dos cartas
-/// máximas del mismo equipo ganan en vez de empardar) se resuelve en una capa
-/// superior cuando se implemente el 2v2 (Paso 16).
+/// Resuelve una baza: dadas las cartas que se tiraron a la mesa con el equipo de cada
+/// una, dice qué jugada ganó. RULES_Afinadas.md §"Como se resuelve la mano": gana la
+/// carta más alta y su equipo se lleva la baza. Si el máximo de fuerza lo comparten
+/// equipos distintos, la baza es parda; si lo comparten dos del mismo equipo, gana ese
+/// equipo (no es parda). En 1v1 cada jugador es su equipo, así que se reduce a ganar la
+/// carta más alta con parda por empate.
 /// </summary>
 public static class Baza
 {
     /// <summary>
     /// Resuelve la baza. Las <paramref name="jugadas"/> van en orden de juego y el
-    /// resultado referencia la posición de la carta ganadora en esa lista.
+    /// resultado referencia la posición de la jugada ganadora en esa lista.
     /// </summary>
-    public static ResultadoBaza Resolver(IReadOnlyList<Carta> jugadas, Muestra muestra)
+    public static ResultadoBaza Resolver(IReadOnlyList<(Carta Carta, EquipoId Equipo)> jugadas, Muestra muestra)
     {
         if (jugadas.Count == 0)
             throw new ArgumentException("Una baza necesita al menos una carta jugada.", nameof(jugadas));
 
-        int ganador = 0;
-        int mejorFuerza = Jerarquia.Fuerza(jugadas[0], muestra);
-        bool maximoEmpatado = false;
-
-        for (int i = 1; i < jugadas.Count; i++)
+        var fuerzas = new int[jugadas.Count];
+        int maxFuerza = int.MinValue;
+        for (int i = 0; i < jugadas.Count; i++)
         {
-            int fuerza = Jerarquia.Fuerza(jugadas[i], muestra);
+            fuerzas[i] = Jerarquia.Fuerza(jugadas[i].Carta, muestra);
+            if (fuerzas[i] > maxFuerza) maxFuerza = fuerzas[i];
+        }
 
-            if (fuerza > mejorFuerza)
+        // Entre las cartas más altas: si son todas del mismo equipo, gana el equipo; si hay
+        // dos equipos distintos arriba, la baza es parda. La ganadora es la primera del máximo.
+        int ganador = -1;
+        EquipoId? equipoArriba = null;
+        bool parda = false;
+        for (int i = 0; i < jugadas.Count; i++)
+        {
+            if (fuerzas[i] != maxFuerza) continue;
+
+            if (equipoArriba is null)
             {
-                mejorFuerza = fuerza;
+                equipoArriba = jugadas[i].Equipo;
                 ganador = i;
-                maximoEmpatado = false;
             }
-            else if (fuerza == mejorFuerza)
+            else if (!jugadas[i].Equipo.Equals(equipoArriba.Value))
             {
-                maximoEmpatado = true;
+                parda = true;
             }
         }
 
-        return maximoEmpatado ? ResultadoBaza.Parda : ResultadoBaza.Gana(ganador);
+        return parda ? ResultadoBaza.Parda : ResultadoBaza.Gana(ganador);
     }
 }
