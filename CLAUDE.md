@@ -66,7 +66,7 @@ función de `AccionesLegales` a `Accion`.
 ## Vocabulario
 
 Los términos del dominio van en español rioplatense y no se traducen:
-`Envido`, `RealEnvido`, `FaltaEnvido`, `Flor`, `ContraFlor`, `ContraFlorAlResto`,
+`Envido`, `RealEnvido`, `FaltaEnvido`, `Flor`, `ContraFlorAlResto`,
 `Truco`, `Retruco`, `ValeCuatro`, `Muestra`, `Pieza`, `Mata`, `Mano`, `Pie`,
 `Baza`, `Parda`, `Tanto`, `IrseAlMazo`, `Redondilla`, `PicoAPico`, `Collera`,
 `Trillera`, `Seña`.

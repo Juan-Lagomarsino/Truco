@@ -201,12 +201,16 @@ La flor invalida el envido. Si alguien canta flor no se puede tocar envido, y si
 - Dos piezas + cualquier carta.
 - Tres piezas.
 
+En todas estas formas, y tambien en el envido, el 12 que actua de espejo cuenta como la pieza que copia. Si la muestra es un 2 de Oro, un 12 de Oro cuenta como un 2 de Oro tambien para armar flor: un 12 de Oro espejo mas otra pieza ya es flor de dos piezas.
+
 ### Como se cuenta
 
 - Tres del mismo palo: 20 + la suma de las tres.
 - Una pieza + dos del mismo palo: los puntos de la pieza + la suma de las otras dos.
 - Dos piezas + una carta: los puntos de la pieza mas alta + las unidades de la segunda pieza + los puntos de la tercera carta.
 - Tres piezas: los puntos de la pieza mas alta + las unidades de las otras dos.
+
+Cuando una mano entra en mas de una de estas reglas, se cuenta por la que tiene mas piezas: primero tres piezas, despues dos piezas, despues una pieza mas dos del mismo palo, y por ultimo tres del mismo palo. Como una pieza siempre aporta su valor entero, esa es ademas la cuenta que da mas tantos. Ejemplo, con muestra 3 de Oro y 2, 6 y 7 de Oro se cuenta como una pieza mas dos del mismo palo (30 + 6 + 7 = 43), no como tres del mismo palo (35).
 
 Las unidades son el ultimo digito del valor de la pieza. El 2 de la muestra vale 30 y sus unidades son 0, el 4 vale 29 y sus unidades son 9, el 5 vale 28 y sus unidades son 8, el 11 y el 10 valen 27 y sus unidades son 7.
 

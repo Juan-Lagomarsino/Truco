@@ -1,8 +1,9 @@
 # Preguntas abiertas
 
 Casos que `RULES_Afinadas.md` no resuelve. **Ninguno se implementa sin decisión
-escrita acá.** Cuando decidas una, escribí la respuesta en el campo `Decisión` y
-la fecha; a partir de ahí es regla y va a `RULES_Afinadas.md`.
+escrita acá.** Cuando decidas una, la muevo a la sección **Solucionadas** (al
+final) con su campo `Decisión` y la fecha; a partir de ahí es regla y va a
+`RULES_Afinadas.md`.
 
 Estado: `ABIERTA` / `DECIDIDA`
 
@@ -53,16 +54,6 @@ tenía, ¿la pierde o la cobra? Decidilo junto con esta.
 ---
 
 ## Bloque B — Detectadas al leer el documento (no estaban anotadas)
-
-### B1. Precedencia entre las reglas de recuento de flor
-**Estado:** ABIERTA
-**El caso:** muestra 3 de Oro, mano = 2 de Oro, 6 de Oro, 7 de Oro. Aplican dos
-reglas del documento a la vez: "una pieza + dos del mismo palo" da 30+6+7 = **43**,
-y "tres del mismo palo" da 20+2+6+7 = **35**.
-**Recomendación:** precedencia estricta por cantidad de piezas: tres piezas →
-dos piezas → una pieza → tres del mismo palo. Da 43.
-**Impacto:** alto y silencioso. Sin esta decisión, el orden de los `if` decide el
-resultado.
 
 ### B2. Cuántas veces se puede revirar el envido
 **Estado:** ABIERTA
@@ -132,6 +123,44 @@ ni cómo rota el reparto.
 **Recomendación:** dejar el modo de 6 jugadores **fuera del alcance inicial**.
 Implementá 1v1 y 2v2, dejá la estructura preparada, y volvé al 3v3 cuando la
 mesa esté jugable. Es el modo con más reglas propias y menos especificadas.
+
+---
+
+## Solucionadas
+
+Las que ya se decidieron. Cada una queda con su `Decisión` y la fecha; a partir de
+ahí son regla y van a `RULES_Afinadas.md`.
+
+### B1. Precedencia entre las reglas de recuento de flor
+**Estado:** DECIDIDA (2026-08-08)
+**Decisión:** Gana el recuento que da más tantos, que en la práctica equivale a la
+precedencia por cantidad de piezas (3 piezas → 2 piezas → 1 pieza + 2 del mismo
+palo → 3 del mismo palo). El motivo no es "que dé más" por sí mismo: con una o más
+piezas siempre te quedás con el valor entero de la pieza más alta (2→30, 4→29,
+5→28, 11→27, 10→27), y si hay una segunda pieza se le suma su segundo dígito
+(unidades). Ej.: un 2 y un 4 del palo de la muestra dan 30 + 9 = 39 antes de la
+tercera carta. Caso original: muestra 3 de Oro con 2/6/7 de Oro → "una pieza + dos
+del mismo palo" = 30+6+7 = 43.
+
+### C1. ¿El 12 espejo cuenta como pieza para formar y contar flor y envido?
+**Estado:** DECIDIDA (2026-08-08)
+**Decisión:** Sí, es pieza a todos los efectos: fuerza, valor y detección de
+flor/envido. Un 12 espejo + otra pieza forma flor por "dos piezas".
+
+### C2. ¿Existe un canto "Contra Flor" a secas?
+**Estado:** DECIDIDA (2026-08-08)
+**Decisión:** No existe. Los únicos cantos de flor son "La mía flor", "Con flor
+envido" y "Contra flor al resto".
+**Pendiente:** sacar `ContraFlor` del vocabulario de `CLAUDE.md` (queda
+`ContraFlorAlResto`). Lo edita el autor.
+
+### C3. Estructura de los cantos de flor
+**Estado:** DECIDIDA (2026-08-08)
+**Decisión:** Cada canto de flor es independiente; **no** forman una escalera de
+reviro (a diferencia del envido).
+**A checkear:** conviene verificarlo jugando en la mesa real. En algunas variantes
+los cantos de flor sí escalan; si resultara que acá también, revisar esta decisión
+junto con B3.
 
 ---
 
