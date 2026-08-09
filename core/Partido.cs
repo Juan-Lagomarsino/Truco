@@ -68,6 +68,7 @@ public static class Partido
         AgregarAperturasDeEnvido(e, jugador, acciones);
         if (PuedeCantarFlor(e, jugador))
             acciones.Add(new CantarFlor(jugador));
+        acciones.Add(new IrseAlMazo(jugador)); // sin cantos pendientes y en tu turno, siempre podés irte
 
         return acciones;
     }
@@ -133,8 +134,21 @@ public static class Partido
             CantarTruco c => AplicarCantarTruco(e, c),
             Quiero q => AplicarQuiero(e, q),
             NoQuiero n => AplicarNoQuiero(e, n),
+            IrseAlMazo im => AplicarIrseAlMazo(e, im),
             _ => throw new ArgumentException($"Acción no soportada: {accion.GetType().Name}.", nameof(accion)),
         };
+    }
+
+    private static EstadoPartida AplicarIrseAlMazo(EstadoPartida e, IrseAlMazo im)
+    {
+        if (e.HayEnvidoPendiente || e.HayCantoPendiente)
+            throw new InvalidOperationException("No se puede ir al mazo con un canto sin resolver.");
+        if (!im.Jugador.Equals(e.Turno))
+            throw new InvalidOperationException($"No es el turno del jugador {im.Jugador.Valor}.");
+
+        // El rival se lleva lo que valía la mano (1, o el último truco querido).
+        var rival = OtroEquipo(e.EquipoDe(im.Jugador));
+        return CerrarMano(e, rival, ValorTruco(e.Truco));
     }
 
     private static EstadoPartida AplicarCantarFlor(EstadoPartida e, CantarFlor cf)

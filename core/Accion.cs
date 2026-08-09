@@ -28,3 +28,9 @@ public sealed record Quiero(JugadorId Jugador) : Accion;
 
 /// <summary>Rechazar el canto pendiente: el que cantó se lleva el valor del último canto querido.</summary>
 public sealed record NoQuiero(JugadorId Jugador) : Accion;
+
+/// <summary>
+/// Rendirse en la mano: el rival se lleva los puntos en juego (1, o el último truco
+/// querido) y la mano termina. En equipo se va todo el equipo del que se va (B7).
+/// </summary>
+public sealed record IrseAlMazo(JugadorId Jugador) : Accion;
