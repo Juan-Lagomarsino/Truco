@@ -62,6 +62,9 @@ public sealed record EstadoPartida
     /// <summary>El envido ya se jugó (se quiso o no se quiso) en esta mano: no se puede tocar de nuevo.</summary>
     public bool EnvidoJugado { get; init; }
 
+    /// <summary>Ya se cantó y resolvió una flor en esta mano. Anula el envido y bloquea otra flor.</summary>
+    public bool FlorResuelta { get; init; }
+
     /// <summary>El partido terminó cuando un equipo llegó al largo.</summary>
     public bool Terminado => Contador.Termino;
 

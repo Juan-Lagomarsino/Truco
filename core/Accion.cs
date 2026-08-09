@@ -20,6 +20,9 @@ public sealed record CantarTruco(JugadorId Jugador) : Accion;
 /// <summary>Un jugador toca el envido (o lo revira: envido de nuevo, real envido, falta envido).</summary>
 public sealed record CantarEnvido(JugadorId Jugador, EnvidoCanto Canto) : Accion;
 
+/// <summary>Un jugador canta su flor. Anula el envido; la flor más alta cobra 3.</summary>
+public sealed record CantarFlor(JugadorId Jugador) : Accion;
+
 /// <summary>Aceptar el canto pendiente.</summary>
 public sealed record Quiero(JugadorId Jugador) : Accion;
 
