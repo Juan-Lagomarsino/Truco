@@ -195,8 +195,8 @@ public static class Partido
         };
     }
 
-    // Jugadores cuyo rival tenía flor y no la cantó (flor escondida reclamable). Si se cantó
-    // flor no hay nada escondido. Es 1v1: el rival es el otro jugador.
+    // Jugadores cuyo equipo rival tenía flor y no la cantó (flor escondida reclamable). Si se
+    // cantó flor no hay nada escondido.
     private static IReadOnlyList<JugadorId> Reclamadores(EstadoPartida e)
     {
         if (e.FlorResuelta) return Array.Empty<JugadorId>();
@@ -204,9 +204,9 @@ public static class Partido
         var reclamadores = new List<JugadorId>();
         for (int j = 0; j < e.CantidadJugadores; j++)
         {
-            var rival = new JugadorId((j + 1) % e.CantidadJugadores);
-            if (Flor.Hay(e.ManosIniciales[rival.Valor], e.Muestra))
-                reclamadores.Add(new JugadorId(j));
+            var jugador = new JugadorId(j);
+            if (FloresDeEquipo(e, OtroEquipo(e.EquipoDe(jugador))) > 0)
+                reclamadores.Add(jugador);
         }
         return reclamadores;
     }
@@ -216,9 +216,13 @@ public static class Partido
         if (e.Cierre is null || !e.DenunciasPendientes.Any(j => j.Equals(d.Jugador)))
             throw new InvalidOperationException("No hay una flor escondida para denunciar ahora.");
 
-        // La flor escondida (3) pasa al que denuncia. Estamos en el cierre: se acredita ya.
-        var contador = e.Contador.Sumar(e.EquipoDe(d.Jugador), 3);
-        var pendientes = e.DenunciasPendientes.Where(j => !j.Equals(d.Jugador)).ToList();
+        // La flor escondida del equipo rival pasa al que denuncia: 3 por cada flor escondida.
+        var equipoDenunciante = e.EquipoDe(d.Jugador);
+        var equipoAcusado = OtroEquipo(equipoDenunciante);
+        var contador = e.Contador.Sumar(equipoDenunciante, 3 * FloresDeEquipo(e, equipoAcusado));
+
+        // Esa flor ya se reclamó: salen todos los que apuntaban al mismo equipo (los compañeros).
+        var pendientes = e.DenunciasPendientes.Where(j => e.EquipoDe(j) != equipoDenunciante).ToList();
 
         if (contador.Termino)
             return e with { Contador = contador, Cierre = null, DenunciasPendientes = Array.Empty<JugadorId>() };
@@ -253,9 +257,11 @@ public static class Partido
         // Base (14a): la flor más alta cobra 3; empate, el equipo mano. Cantar flor anula
         // el envido (F1). Los bids (Con Flor Envido / Contra Flor al Resto) y la denuncia
         // son 14b/14c.
+        // La flor más alta gana; el equipo ganador cobra 3 por cada una de sus flores (collera).
+        var ganador = FlorGanador(e);
         return e with
         {
-            CobroFlor = new Cobro(FlorGanador(e), 3),
+            CobroFlor = new Cobro(ganador, 3 * FloresDeEquipo(e, ganador)),
             FlorResuelta = true,
             EnvidoPendiente = null,
             EnvidoJugado = true,
@@ -269,13 +275,13 @@ public static class Partido
         if (!PuedeCantarFlor(e, jugador))
             throw new InvalidOperationException($"El jugador {jugador.Valor} no puede cantar flor ahora.");
 
-        var otro = new JugadorId((jugador.Valor + 1) % e.CantidadJugadores);
-        bool rivalConFlor = Flor.Hay(e.ManosIniciales[otro.Valor], e.Muestra);
+        var equipoCantor = e.EquipoDe(jugador);
+        bool rivalConFlor = FloresDeEquipo(e, OtroEquipo(equipoCantor)) > 0;
 
         if (!rivalConFlor)
             return e with
             {
-                CobroFlor = new Cobro(e.EquipoDe(jugador), 3),
+                CobroFlor = new Cobro(equipoCantor, 3 * FloresDeEquipo(e, equipoCantor)),
                 FlorResuelta = true,
                 EnvidoPendiente = null,
                 EnvidoJugado = true,
@@ -283,7 +289,7 @@ public static class Partido
 
         return e with
         {
-            FlorPendiente = new EstadoFlorBid(esContra, OtroEquipo(e.EquipoDe(jugador))),
+            FlorPendiente = new EstadoFlorBid(esContra, OtroEquipo(equipoCantor)),
             EnvidoPendiente = null,
             EnvidoJugado = true,
         };
@@ -320,15 +326,35 @@ public static class Partido
         };
     }
 
-    // Quién se lleva la flor entre los dos jugadores (1v1): la más alta; empate, equipo mano.
+    // Qué equipo gana la flor: el de la flor más alta (cada equipo juega su mejor flor);
+    // empate, el equipo mano.
     private static EquipoId FlorGanador(EstadoPartida e)
     {
-        int f0 = FlorParaComparar(e.ManosIniciales[0], e.Muestra);
-        int f1 = FlorParaComparar(e.ManosIniciales[1], e.Muestra);
+        int flor0 = FlorMaximaDeEquipo(e, new EquipoId(0));
+        int flor1 = FlorMaximaDeEquipo(e, new EquipoId(1));
 
-        if (f0 > f1) return new EquipoId(0);
-        if (f1 > f0) return new EquipoId(1);
+        if (flor0 > flor1) return new EquipoId(0);
+        if (flor1 > flor0) return new EquipoId(1);
         return e.EquipoDe(e.JugadorMano); // empate → equipo mano
+    }
+
+    private static int FlorMaximaDeEquipo(EstadoPartida e, EquipoId equipo)
+    {
+        int mejor = -1;
+        for (int j = 0; j < e.CantidadJugadores; j++)
+            if (e.EquipoDe(new JugadorId(j)) == equipo)
+                mejor = Math.Max(mejor, FlorParaComparar(e.ManosIniciales[j], e.Muestra));
+        return mejor;
+    }
+
+    // Cuántas flores tiene un equipo (para la collera: 3 por cada flor del equipo ganador).
+    private static int FloresDeEquipo(EstadoPartida e, EquipoId equipo)
+    {
+        int n = 0;
+        for (int j = 0; j < e.CantidadJugadores; j++)
+            if (e.EquipoDe(new JugadorId(j)) == equipo && Flor.Hay(e.ManosIniciales[j], e.Muestra))
+                n++;
+        return n;
     }
 
     private static int FlorParaComparar(IReadOnlyList<Carta> mano, Muestra muestra) =>

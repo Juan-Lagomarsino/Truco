@@ -93,6 +93,41 @@ public class DosVsDosTests
         Assert.Equal(new Cobro(E0, 2), e2.CobroEnvido); // el 31 del equipo 0 le gana al 7 del 1
     }
 
+    // 16c: collera — dos flores del mismo equipo cobran 3 cada una (6).
+    [Fact]
+    public void Collera_DosFloresDelMismoEquipo_Cobran6()
+    {
+        var muestra = new Muestra(C(6, Palo.Basto));
+        var e = Estado(
+            mano0: new[] { C(7, Palo.Espada), C(6, Palo.Espada), C(5, Palo.Espada) }, // flor E0
+            mano1: new[] { C(4, Palo.Copa), C(5, Palo.Oro), C(3, Palo.Basto) },        // sin flor
+            mano2: new[] { C(7, Palo.Oro), C(6, Palo.Oro), C(4, Palo.Oro) },           // flor E0
+            mano3: new[] { C(4, Palo.Espada), C(5, Palo.Copa), C(3, Palo.Oro) },       // sin flor
+            repartidor: J3, muestra: muestra); // mano = J0
+
+        var e1 = Partido.Aplicar(e, new CantarFlor(J0));
+
+        Assert.Equal(new Cobro(E0, 6), e1.CobroFlor); // dos flores del equipo 0
+    }
+
+    // 16c: enfrentamiento — gana el equipo de la flor más alta y cobra por sus flores.
+    [Fact]
+    public void EnfrentamientoDeFlores_GanaElEquipoDeLaMasAlta_ConCollera()
+    {
+        var muestra = new Muestra(C(6, Palo.Basto));
+        var e = Estado(
+            mano0: new[] { C(7, Palo.Espada), C(6, Palo.Espada), C(5, Palo.Espada) }, // flor 38 (E0)
+            mano1: new[] { C(7, Palo.Copa), C(6, Palo.Copa), C(4, Palo.Copa) },        // flor 37 (E1)
+            mano2: new[] { C(7, Palo.Oro), C(6, Palo.Oro), C(4, Palo.Oro) },           // flor 37 (E0)
+            mano3: new[] { C(5, Palo.Oro), C(4, Palo.Espada), C(3, Palo.Basto) },      // sin flor
+            repartidor: J3, muestra: muestra); // mano = J0
+
+        var e1 = Partido.Aplicar(e, new CantarFlor(J0));
+
+        // El equipo 0 tiene la flor más alta (38) y dos flores → 6; el equipo 1 no cobra.
+        Assert.Equal(new Cobro(E0, 6), e1.CobroFlor);
+    }
+
     private static EstadoPartida Estado(
         IReadOnlyList<Carta> mano0, IReadOnlyList<Carta> mano1,
         IReadOnlyList<Carta> mano2, IReadOnlyList<Carta> mano3, JugadorId repartidor, Muestra? muestra = null)
