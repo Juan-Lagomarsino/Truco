@@ -38,6 +38,18 @@ public sealed record EstadoPartida
     /// </summary>
     public IReadOnlyList<JugadorId> Activos { get; init; } = Array.Empty<JugadorId>();
 
+    /// <summary>
+    /// La fase del ciclo del modo de a 6 (redondilla ↔ pico a pico). En el resto de los
+    /// modos es siempre Redondilla. Ver <see cref="FaseCiclo"/>.
+    /// </summary>
+    public FaseCiclo Fase { get; init; } = FaseCiclo.Redondilla;
+
+    /// <summary>
+    /// Cuál de los tres picos se está jugando (0..2). Sólo tiene sentido cuando
+    /// <see cref="Fase"/> es PicoAPico; en redondilla es 0.
+    /// </summary>
+    public int IndicePico { get; init; }
+
     /// <summary>Resultado de las bazas ya cerradas en esta mano.</summary>
     public required IReadOnlyList<GanadorBaza> BazasGanadas { get; init; }
 
@@ -98,8 +110,13 @@ public sealed record EstadoPartida
     /// <summary>Hay un bid de flor esperando respuesta.</summary>
     public bool HayFlorPendiente => FlorPendiente is not null;
 
-    /// <summary>El jugador mano de esta ronda: el que está seguido al repartidor.</summary>
-    public JugadorId JugadorMano => new((Repartidor.Valor + 1) % CantidadJugadores);
+    /// <summary>
+    /// El jugador mano de esta ronda: el que está a la derecha del repartidor. En un pico a
+    /// pico los tres picos tienen de mano a los tres jugadores consecutivos al repartidor, así
+    /// que el mano del pico k es repartidor+1+k.
+    /// </summary>
+    public JugadorId JugadorMano => new(
+        (Repartidor.Valor + 1 + (Fase == FaseCiclo.PicoAPico ? IndicePico : 0)) % CantidadJugadores);
 
     /// <summary>El equipo de un jugador. Los equipos se sientan intercalados, así que es su índice módulo 2.</summary>
     public EquipoId EquipoDe(JugadorId jugador) => new(jugador.Valor % 2);

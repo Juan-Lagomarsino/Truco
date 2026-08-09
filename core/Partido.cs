@@ -532,12 +532,91 @@ public static class Partido
         if (contador.Termino)
             return e with { Contador = contador };
 
+        return SiguienteMano(e, contador);
+    }
+
+    // Elige y arma la mano siguiente. Con seis jugadores corre la máquina de estados del modo
+    // de a 6 (redondilla ↔ pico a pico); en el resto de los modos reparte y rota el repartidor.
+    private static EstadoPartida SiguienteMano(EstadoPartida e, Contador contador)
+    {
+        if (e.CantidadJugadores == 6)
+            return SiguienteManoDeA6(e, contador);
+
         return RepartirMano(
             numeroDeMano: e.NumeroDeMano + 1,
             repartidor: Siguiente(e.Repartidor, e.CantidadJugadores),
             contador,
             e.Semilla,
             e.CantidadJugadores);
+    }
+
+    // Modo de a 6: en medio de un pico a pico avanza al pico siguiente sin repartir; al
+    // terminar el estado (la redondilla, o el pico a pico entero) elige el próximo según el
+    // ciclo y reparte. Corte a la mitad (B10): tras una redondilla, si un equipo ya está en
+    // buenas, se sigue sólo con redondillas; dentro de un pico a pico se juegan igual los tres.
+    private static EstadoPartida SiguienteManoDeA6(EstadoPartida e, Contador contador)
+    {
+        if (e.Fase == FaseCiclo.PicoAPico && e.IndicePico < 2)
+            return AvanzarPico(e, contador, e.IndicePico + 1);
+
+        var repartidor = Siguiente(e.Repartidor, 6);
+        var repartida = RepartirMano(e.NumeroDeMano + 1, repartidor, contador, e.Semilla, 6);
+
+        bool algunoEnBuenas = contador.EnBuenas(new EquipoId(0)) || contador.EnBuenas(new EquipoId(1));
+        bool proximoEsPico = e.Fase == FaseCiclo.Redondilla && !algunoEnBuenas;
+        return proximoEsPico ? IniciarPicoInicial(repartida) : repartida;
+    }
+
+    // Convierte una mano recién repartida en el primer pico del pico a pico. El reparto ya dejó
+    // de mano (turno y abridor) al jugador a la derecha del repartidor, que es el mano del pico 0.
+    private static EstadoPartida IniciarPicoInicial(EstadoPartida e) => e with
+    {
+        Fase = FaseCiclo.PicoAPico,
+        IndicePico = 0,
+        Activos = ParDePico(e.Repartidor, 0),
+    };
+
+    // Avanza al pico k (sin repartir): reusa las manos iniciales y la muestra, cambia la pareja
+    // activa y el mano, y resetea baza, cantos, cobros y ventanas. El mano del pico k es
+    // repartidor+1+k; abre y le toca a él.
+    private static EstadoPartida AvanzarPico(EstadoPartida e, Contador contador, int k)
+    {
+        var mano = new JugadorId((e.Repartidor.Valor + 1 + k) % 6);
+        return e with
+        {
+            Contador = contador,
+            Fase = FaseCiclo.PicoAPico,
+            IndicePico = k,
+            Activos = ParDePico(e.Repartidor, k),
+            Manos = e.ManosIniciales,
+            BazasGanadas = new List<GanadorBaza>(),
+            JugadasBaza = new List<Jugada>(),
+            Abridor = mano,
+            Turno = mano,
+            Truco = NivelTruco.Nada,
+            TrucoPendiente = null,
+            EquipoResponde = null,
+            EquipoQuePuedeRevirar = null,
+            EnvidoPendiente = null,
+            EnvidoJugado = false,
+            FlorResuelta = false,
+            CobroFlor = null,
+            CobroEnvido = null,
+            FlorPendiente = null,
+            Cierre = null,
+            DenunciasPendientes = Array.Empty<JugadorId>(),
+        };
+    }
+
+    // La pareja del pico k, en orden de asiento: el mano (repartidor+1+k) y el de enfrente
+    // (mano+3). Los tres picos parten los seis asientos en las tres parejas de enfrentados.
+    private static IReadOnlyList<JugadorId> ParDePico(JugadorId repartidor, int k)
+    {
+        int mano = (repartidor.Valor + 1 + k) % 6;
+        int frente = (mano + 3) % 6;
+        return mano < frente
+            ? new[] { new JugadorId(mano), new JugadorId(frente) }
+            : new[] { new JugadorId(frente), new JugadorId(mano) };
     }
 
     // Reparte una mano nueva de forma determinista desde la semilla y el número de mano.
