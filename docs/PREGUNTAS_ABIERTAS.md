@@ -11,29 +11,6 @@ Estado: `ABIERTA` / `DECIDIDA`
 
 ## Bloque B — Detectadas al leer el documento (no estaban anotadas)
 
-### B7. Irse al mazo en partidas de equipo
-**Estado:** ABIERTA
-**El caso:** en 2v2 y 3v3, ¿irse al mazo es acción del jugador o del equipo?
-**Recomendación:** del equipo. El jugador que se va abandona la mano entera para
-su lado y los puntos en juego pasan al rival. Modelarlo como acción individual
-que descarta solo a un jugador multiplicaría los casos de resolución de bazas.
-
-### B8. Desempate de envido: definición exacta de "más cerca de la mano"
-**Estado:** ABIERTA
-**El caso:** con 4 y 6 jugadores hace falta una definición operativa.
-**Recomendación:** distancia = cantidad de posiciones en sentido antihorario
-desde el jugador mano. El mano tiene distancia 0 y gana todos los empates.
-**Impacto:** también aplica al desempate de flor.
-
-### B9. Quién puede responder un canto
-**Estado:** ABIERTA
-**El caso:** el documento dice que se grita truco "cuando es tu turno", pero no
-dice quién del equipo rival contesta quiero / no quiero, ni si un compañero
-puede contestar antes.
-**Recomendación:** cualquier jugador del equipo rival puede contestar; el primero
-que contesta compromete al equipo. Necesario para que `AccionesLegales` sepa a
-quién ofrecerle la respuesta.
-
 ### B10. Rotación del pico a pico en partidas de a 6
 **Estado:** ABIERTA
 **El caso:** el documento dice que se alternan una redondilla y tres manos de
@@ -164,6 +141,57 @@ toda situación de empate.
 **Decisión:** Orden de acreditación de tantos dentro de una mano: flor → envido →
 truco. El partido termina apenas un equipo llega al objetivo; si los tantos de flor ya
 cruzan la meta, la mano no se termina de jugar.
+
+### F1. Ventana de la flor y anulación del envido
+**Estado:** DECIDIDA (2026-08-09)
+**Decisión:** La flor se canta en el primer turno del jugador (antes de tirar su
+primera carta), misma ventana que el envido. Cantar flor anula el envido: no se
+puede tocar, y si había uno pendiente se cancela sin puntos. Una flor escondida (no
+cantada) no anula: el envido se juega normal (después puede haber denuncia, ver F3).
+
+### F2. Enfrentamiento de flores y rival sin flor (1v1)
+**Estado:** DECIDIDA (2026-08-09)
+**Decisión:** El que tiene flor la canta (obligatorio para cobrar). Si sólo un equipo
+tiene flor, cobra 3. Si los dos tienen, por defecto la flor más alta cobra 3. El que
+tiene flor puede subir con "Con flor envido" (si el rival con flor quiere: 5 a la flor
+más alta; no quiere: 3 al que cantó) o "Contra flor al resto" (quiere: la flor más
+alta se lleva la falta del que va ganando + las flores; no quiere: 3). Independientes
+(C3): no se encadenan. Si el rival no tiene flor, no hay a quién querer/no querer: el
+que cantó flor sólo cobra 3.
+
+### F3. Denuncia de flor escondida
+**Estado:** DECIDIDA (2026-08-09)
+**Decisión:** El rival puede denunciar ("tenías flor") mientras dure la mano. Si el
+acusado tenía flor y no la cantó, los 3 puntos de esa flor pasan al equipo que
+denuncia, y el que la escondió no cobra nada. Si no tenía flor, la denuncia no tiene
+efecto (sin penalización).
+
+### F4. Acreditación de la flor
+**Estado:** DECIDIDA (2026-08-09) — con nota a revisar.
+**Decisión:** En la mesa real los tantos se dicen en el momento y se acreditan al
+final (por si alguien mintió o se equivocó). En el reductor determinista no hay
+mentira posible: la flor se calcula de las cartas. Se acredita apenas se resuelve
+(primer turno), lo que da naturalmente el orden B6 flor → envido → truco porque la
+flor va antes. **A revisar** si se prefiere el diferido estricto "al final de la mano".
+
+### B7. Irse al mazo en partidas de equipo
+**Estado:** DECIDIDA (2026-08-09)
+**Decisión:** Es acción del equipo al 100%: si un jugador se va, se va todo su equipo
+y los puntos en juego pasan al rival. **Matiz (a futuro):** en el pico a pico de a 6,
+cada 1v1 es independiente, así que si uno se va, su compañero igual juega su pico a
+pico. **Idea de implementación:** más adelante, un botón de "votar irse al mazo".
+
+### B8. Desempate de envido y flor
+**Estado:** DECIDIDA (2026-08-09)
+**Decisión:** El empate siempre lo gana el **equipo** que es mano (el equipo del
+jugador mano). Aplica igual al envido y a la flor.
+
+### B9. Quién puede responder un canto
+**Estado:** DECIDIDA (2026-08-09)
+**Decisión:** Cualquier jugador del equipo rival puede responder; el primero que
+contesta compromete al equipo. Por regla no escrita suele responder "el pie" (el
+último de ese equipo en recibir cartas). **Idea de implementación:** un toggle para
+elegir entre "sólo responde el pie" y "responde cualquiera".
 
 ---
 
