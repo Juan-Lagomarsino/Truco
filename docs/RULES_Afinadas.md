@@ -289,7 +289,49 @@ Cuando un equipo llega a la mitad de los puntos del partido, de ahi en adelante 
 
 ## Señas
 
-Existe un codigo de gestos para avisarle al compañero que cartas tenes sin que te escuche el rival. Las señas son parte del juego real y van a hacer falta para el modo de a 4 y de a 6, pero todavia no estan documentadas aca. Hay que armar la tabla completa de seña por carta antes de implementarlas.
+Existe un codigo de gestos para avisarle al compañero que cartas tenes sin que te escuche el rival. Solo tienen sentido cuando hay compañero: el modo de a 4 (2 contra 2) y el de a 6 (3 contra 3). En el 1 contra 1 no hay señas.
+
+Las señas son informacion, no una jugada: no cambian el estado legal de la mano ni la resolucion de las bazas. El rival puede intentar "bicharlas" (espiarlas), pero eso es una idea para mas adelante y no afecta esta tabla.
+
+### Que se señea
+
+Se señea la fuerza de la carta en esa mano, no la carta fisica. Como la muestra cambia el valor de las cartas (las piezas), una misma carta puede tener dos señas distintas segun la muestra, y siempre toma la del valor mas alto, igual que en el resto de la jerarquia. Ejemplo: el 4 de Oro es una blanca sin valor, pero si la muestra es de Oro pasa a ser pieza (vale 29) y ahi lleva la seña de pieza.
+
+Se señean todas las cartas buenas que tengas, que pueden ser hasta dos. Las cartas malas no se avisan. Si tenes dos buenas y una mala, haces las dos señas buenas y nada mas; no avisas la mala. Hacer una seña ya implica "tengo esta carta y las otras son malas".
+
+Son buenas (tienen seña propia): las piezas, las matas, el 3, el 2 comun y los 1 falsos (1 de Oro y 1 de Copa). Son malas (sin seña propia): las blancas y las negras.
+
+### Tabla de señas por carta
+
+Piezas (las cinco cartas del palo de la muestra):
+
+- 2 de la muestra (pieza mayor, vale 30): levantar las cejas.
+- 4 de la muestra (vale 29): tirar un beso.
+- 5 de la muestra (vale 28): arrugar la nariz.
+- 11 / Caballo de la muestra (vale 27): guiñar el ojo derecho.
+- 10 / Sota de la muestra (vale 27): guiñar el ojo izquierdo.
+
+El 12 que actua de espejo (cuando la muestra es pieza) hace la seña de la pieza que copia. Si la muestra no es pieza, el 12 es una negra comun y no tiene seña propia.
+
+Matas (identidad fija, no dependen de la muestra). Van de a pares con la misma seña: se avisa "una de las dos altas" o "una de las dos bajas", sin decir cual.
+
+- 1 de Espada y 1 de Basto: mueca hacia la derecha.
+- 7 de Espada y 7 de Oro: mueca hacia la izquierda.
+
+Chicas y falsos:
+
+- 3 (de cualquier palo): morder el labio inferior.
+- 2 que no es pieza (palo distinto al de la muestra): boca levemente abierta.
+- 1 de Oro y 1 de Copa (los 1 falsos): sacar la punta de la lengua.
+
+Malas (blancas y negras): no tienen seña propia. Solo se avisa la mano entera cuando las tres son malas, cerrando ambos ojos. Cerrar los ojos significa "mis tres cartas son malas", no se usa por una carta suelta.
+
+### Señas que no son de una carta
+
+- Flor: inflar los cachetes.
+- Envido: sacar los dientes de abajo.
+
+El detalle completo, con la tabla carta por carta de las 40 y las fuentes, esta en `notas/SEÑAS.md`.
 
 ---
 
