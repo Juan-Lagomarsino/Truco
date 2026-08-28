@@ -306,7 +306,7 @@ public static class Partido
         {
             ganador = FlorGanador(e);
             puntos = pend.EsContraFlorAlResto
-                ? FaltaEnvido(e.Contador) + 3 * FloresEnJuego(e)
+                ? FaltaEnvido(e) + 3 * FloresEnJuego(e)
                 : 5;
         }
         else
@@ -684,14 +684,19 @@ public static class Partido
     {
         EnvidoCanto.Envido => acumulado + 2,
         EnvidoCanto.RealEnvido => acumulado + 3,
-        EnvidoCanto.FaltaEnvido => FaltaEnvido(e.Contador),
+        EnvidoCanto.FaltaEnvido => FaltaEnvido(e),
         _ => throw new ArgumentOutOfRangeException(nameof(canto), canto, "Canto de envido desconocido."),
     };
 
-    // Falta Envido (A4): lo que le falta al que va primero para cerrar su etapa. Si el
-    // líder está en malas, hasta la mitad; si ya está en buenas, hasta el largo.
-    private static int FaltaEnvido(Contador contador)
+    // Falta Envido. En el pico a pico del modo de a 6 vale 6 fijo (RULES §"Partidas de a 6");
+    // de ahí la Contra Flor al Resto cae en 12 (6 + las dos flores). Fuera del pico (A4): lo
+    // que le falta al que va primero para cerrar su etapa (mitad si está en malas, largo si
+    // ya está en buenas).
+    private static int FaltaEnvido(EstadoPartida e)
     {
+        if (e.Fase == FaseCiclo.PicoAPico) return 6;
+
+        var contador = e.Contador;
         int lider = Math.Max(contador.Puntos(new EquipoId(0)), contador.Puntos(new EquipoId(1)));
         return lider < contador.Mitad ? contador.Mitad - lider : contador.Largo - lider;
     }
