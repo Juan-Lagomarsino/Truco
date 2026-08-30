@@ -83,8 +83,8 @@ que las tengas todas juntas).
 - Nombre/marca del juego (no hay ninguno decidido todavía).
 - Si la v1 sale solo local/vs bot o si el multijugador online es requisito desde el día 1.
 
-**De `docs/notas/DISENO_Grabacion.md`** (diseño para el paso 6, todavía sin implementar):
-- Si el codec de serialización de una `Grabacion` (texto plano propuesto, ver el
-  documento) debería vivir dentro de `/core` o afuera, en `/cli`.
+**De `docs/notas/DISENO_Grabacion.md`**: resuelta — ver DECISIONES_NOCTURNAS.md D4
+(el codec de texto de una `Grabacion` quedó en `/core`, por ser transformación de datos
+pura sin IO, igual criterio que "EstadoPartida es serializable").
 
 ---

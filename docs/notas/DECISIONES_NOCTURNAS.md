@@ -49,4 +49,19 @@ traduce; el proyecto ya tiene un archivo `SEÑAS.md` con el mismo criterio. Conf
 compila sin problemas (los identificadores Unicode están soportados en C#) y los 436 tests
 de la suite corren en verde con el archivo así nombrado.
 
+## D4. `GrabacionTexto` (codec de la Grabacion) vive en /core, no en /cli
+
+**Decisión:** el encoder/decoder de texto plano de una `Grabacion`
+(`core/GrabacionTexto.cs`) vive en `/core`, no en `/cli` junto con el IO de archivo.
+
+**Por qué:** `docs/notas/DISENO_Grabacion.md` (§3.3, §6.4) dejó esto marcado como
+decisión abierta del autor, porque toca "qué entra en /core". Pero convertir un objeto a
+`string` y viceversa no es entrada/salida (no toca `Console`, archivos ni red): es
+transformación de datos pura, igual que cualquier `ToString()`/parseo que ya vive en
+`/core`. `CLAUDE.md` ya da por sentado que `EstadoPartida` es serializable; esto extiende
+la misma idea a `Grabacion`. Ponerlo en `/core` además lo deja testeable en `/tests` sin
+depender de que exista `/cli`, y evita duplicar el formato el día que `/server` también
+necesite leer/escribir grabaciones. Sólo el IO real (`File.ReadAllText`/`WriteAllText`)
+queda afuera, en `/cli`.
+
 ---

@@ -6,7 +6,11 @@ namespace Cli;
 /// <summary>
 /// Consola jugable: 1 contra 1, vos (jugador 0) contra <see cref="PoliticaSimple"/>
 /// (jugador 1). Toda la entrada/salida del juego vive acá — /core y /bot son puros, sin
-/// Console ni ningún otro IO. Uso: <c>dotnet run --project cli [semilla]</c>.
+/// Console ni ningún otro IO.
+///
+/// Uso: <c>dotnet run --project cli [semilla]</c> para jugar (graba la partida al
+/// terminar); <c>dotnet run --project cli -- --reproducir archivo.txt</c> para reproducir
+/// una grabación ya guardada sin jugarla de nuevo.
 /// </summary>
 public static class Program
 {
@@ -18,11 +22,23 @@ public static class Program
 
     public static void Main(string[] args)
     {
+        if (args.Length >= 2 && args[0] == "--reproducir")
+        {
+            Reproducir(args[1]);
+            return;
+        }
+
+        Jugar(args);
+    }
+
+    private static void Jugar(string[] args)
+    {
         int semilla = args.Length > 0 && int.TryParse(args[0], out int desdeArgs) ? desdeArgs : Environment.TickCount;
         Console.WriteLine($"Truco Uruguayo — partida a {Largo}, semilla {semilla}.");
         Console.WriteLine();
 
         var estado = Partido.Nueva(largo: Largo, semilla: semilla, cantidadJugadores: 2);
+        var acciones = new List<Accion>();
 
         while (!estado.Terminado)
         {
@@ -32,10 +48,36 @@ public static class Program
                 ?? throw new InvalidOperationException("Ningún jugador tiene acciones legales: no debería pasar.");
 
             var accion = conTurno.Equals(Humano) ? PedirAccionAlHumano(estado) : ElegirYAnunciar(estado);
+            acciones.Add(accion);
             estado = Partido.Aplicar(estado, accion);
         }
 
         MostrarResultadoFinal(estado);
+
+        var grabacion = new Grabacion
+        {
+            Largo = Largo,
+            Semilla = semilla,
+            RepartidorInicial = null,
+            CantidadJugadores = 2,
+            Acciones = acciones,
+        };
+        var ruta = $"grabacion-{semilla}.txt";
+        GrabacionArchivo.Escribir(grabacion, ruta);
+        Console.WriteLine($"Partida grabada en {ruta} (reproducila con --reproducir {ruta}).");
+    }
+
+    private static void Reproducir(string ruta)
+    {
+        var grabacion = GrabacionArchivo.Leer(ruta);
+        Console.WriteLine($"Reproduciendo {ruta} — semilla {grabacion.Semilla}, {grabacion.Acciones.Count} acciones.");
+        Console.WriteLine();
+
+        foreach (var estado in Grabador.ReproducirPasoAPaso(grabacion))
+            MostrarEstado(estado);
+
+        var final = Grabador.Reproducir(grabacion);
+        MostrarResultadoFinal(final);
     }
 
     private static JugadorId? ConAccionesLegales(EstadoPartida estado)
