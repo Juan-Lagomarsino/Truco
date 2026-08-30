@@ -193,7 +193,13 @@ hacés **si esa es tu mejor carta**.
 > [!success] Tabla cerrada y volcada
 > Todas las decisiones (D1–D8) están confirmadas y la tabla ya está en `RULES_Afinadas.md §Señas`
 > (fuente de verdad). Esta nota queda como memoria de trabajo (decisiones, provenance, fuentes).
-> Próximo paso: planificar la implementación en `/core`.
+
+> [!info] Implementado parcialmente en /core (corrida nocturna)
+> `Domain.Señas.DeCarta(Carta, Muestra)` en `core/Señas.cs` ya mapea una carta suelta a su
+> seña (o `null` si es mala), con tests en `tests/SeñasTests.cs`. Lo que falta es la función
+> de "seña de la mano completa" (incluye "cerrar ambos ojos"): encontré un caso real que
+> ninguno de los dos documentos resuelve — qué pasa si las tres cartas de la mano son
+> "buenas" a la vez, dado que el texto dice "hasta dos". Ver `PREGUNTAS_PENDIENTES.md` P1.
 
 ---
 
