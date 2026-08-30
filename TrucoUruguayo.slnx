@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="core/core.csproj" />
   <Project Path="bot/bot.csproj" />
+  <Project Path="cli/cli.csproj" />
   <Project Path="tests/tests.csproj" />
 </Solution>
