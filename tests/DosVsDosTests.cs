@@ -200,6 +200,30 @@ public class DosVsDosTests
         Assert.Empty(Partido.AccionesLegales(e2, J3));
     }
 
+    // B9, para un bid de flor: cualquiera del equipo rival responde, incluso un jugador que
+    // no tiene flor él mismo — el bid es del equipo, no del que puso la flor en la mesa.
+    [Fact]
+    public void CualquieraDelEquipoRivalPuedeResponderUnBidDeFlor_AunSinTenerFlorElMismo()
+    {
+        var muestra = new Muestra(C(6, Palo.Basto));
+        var e = Estado(
+            mano0: new[] { C(7, Palo.Espada), C(6, Palo.Espada), C(5, Palo.Espada) }, // flor 38 (E0)
+            mano1: new[] { C(7, Palo.Oro), C(6, Palo.Oro), C(4, Palo.Oro) },           // flor 37 (E1) — J1 tiene flor
+            mano2: new[] { C(4, Palo.Copa), C(5, Palo.Copa), C(3, Palo.Basto) },       // sin flor
+            mano3: new[] { C(4, Palo.Espada), C(5, Palo.Basto), C(3, Palo.Oro) },      // J3 sin flor
+            repartidor: J3, muestra: muestra); // mano = J0
+
+        var e1 = Partido.Aplicar(e, new CantarFlorEnvido(J0));
+        Assert.NotNull(e1.FlorPendiente); // E1 sí tiene flor (J1): hay bid pendiente, no cobro directo
+
+        // J3, que no tiene flor él mismo, igual puede responder por su equipo.
+        Assert.DoesNotContain(Partido.AccionesLegales(e1, J1), a => a is CantarFlor); // ya no hay ventana de cantar
+        Assert.Contains(Partido.AccionesLegales(e1, J3), a => a is Quiero);
+        var e2 = Partido.Aplicar(e1, new Quiero(J3));
+
+        Assert.Equal(new Cobro(E0, 5), e2.CobroFlor); // la flor más alta (E0, 38) cobra 5
+    }
+
     // B7: irse al mazo es del equipo. Si J1 se va, entrega lo que valía la mano y la mano
     // termina para los cuatro, aunque su compañero J3 no haya hecho nada.
     [Fact]
