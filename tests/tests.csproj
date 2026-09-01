@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="../core/core.csproj" />
     <ProjectReference Include="../bot/bot.csproj" />
+    <ProjectReference Include="../cli/cli.csproj" />
   </ItemGroup>
 
 </Project>

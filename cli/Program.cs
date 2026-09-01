@@ -10,7 +10,8 @@ namespace Cli;
 ///
 /// Uso: <c>dotnet run --project cli [semilla]</c> para jugar (graba la partida al
 /// terminar); <c>dotnet run --project cli -- --reproducir archivo.txt</c> para reproducir
-/// una grabación ya guardada sin jugarla de nuevo.
+/// una grabación ya guardada sin jugarla de nuevo; <c>dotnet run --project cli -- --help</c>
+/// para ver esta ayuda.
 /// </summary>
 public static class Program
 {
@@ -20,20 +21,53 @@ public static class Program
     private static readonly EquipoId EquipoHumano = new(0);
     private static readonly EquipoId EquipoBot = new(1);
 
-    public static void Main(string[] args)
+    /// <summary>0 si terminó bien, 1 si hubo un error de uso (argumentos inválidos, archivo
+    /// inexistente o con formato inválido). No lanza: los errores esperables de la línea de
+    /// comandos se muestran como mensaje claro, no como stack trace.</summary>
+    public static int Main(string[] args)
     {
-        if (args.Length >= 2 && args[0] == "--reproducir")
+        if (Argumentos.EsAyuda(args))
         {
-            Reproducir(args[1]);
-            return;
+            MostrarAyuda();
+            return 0;
         }
 
-        Jugar(args);
+        if (Argumentos.EsReproducir(args))
+        {
+            var (ok, ruta, error) = Argumentos.ParsearReproducir(args);
+            if (!ok)
+            {
+                Console.Error.WriteLine(error);
+                return 1;
+            }
+            return Reproducir(ruta!);
+        }
+
+        return Jugar(args);
     }
 
-    private static void Jugar(string[] args)
+    private static void MostrarAyuda()
     {
-        int semilla = args.Length > 0 && int.TryParse(args[0], out int desdeArgs) ? desdeArgs : Environment.TickCount;
+        Console.WriteLine("Truco Uruguayo — consola jugable (1 contra 1, vos contra el bot).");
+        Console.WriteLine();
+        Console.WriteLine("Uso:");
+        Console.WriteLine("  dotnet run --project cli [semilla]        Jugar una partida nueva.");
+        Console.WriteLine("                                            Sin semilla, se elige una al azar.");
+        Console.WriteLine("  dotnet run --project cli -- --reproducir <archivo>");
+        Console.WriteLine("                                            Reproducir una partida ya grabada.");
+        Console.WriteLine("  dotnet run --project cli -- --help        Mostrar esta ayuda.");
+    }
+
+    private static int Jugar(string[] args)
+    {
+        var (ok, semillaParseada, error) = Argumentos.ParsearSemilla(args);
+        if (!ok)
+        {
+            Console.Error.WriteLine(error);
+            return 1;
+        }
+        int semilla = semillaParseada ?? Environment.TickCount;
+
         Console.WriteLine($"Truco Uruguayo — partida a {Largo}, semilla {semilla}.");
         Console.WriteLine();
 
@@ -65,11 +99,27 @@ public static class Program
         var ruta = $"grabacion-{semilla}.txt";
         GrabacionArchivo.Escribir(grabacion, ruta);
         Console.WriteLine($"Partida grabada en {ruta} (reproducila con --reproducir {ruta}).");
+        return 0;
     }
 
-    private static void Reproducir(string ruta)
+    private static int Reproducir(string ruta)
     {
-        var grabacion = GrabacionArchivo.Leer(ruta);
+        Grabacion grabacion;
+        try
+        {
+            grabacion = GrabacionArchivo.Leer(ruta);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            Console.Error.WriteLine($"No pude leer el archivo '{ruta}': {ex.Message}");
+            return 1;
+        }
+        catch (FormatException ex)
+        {
+            Console.Error.WriteLine($"El archivo '{ruta}' no tiene el formato de una grabación válida: {ex.Message}");
+            return 1;
+        }
+
         Console.WriteLine($"Reproduciendo {ruta} — semilla {grabacion.Semilla}, {grabacion.Acciones.Count} acciones.");
         Console.WriteLine();
 
@@ -78,6 +128,7 @@ public static class Program
 
         var final = Grabador.Reproducir(grabacion);
         MostrarResultadoFinal(final);
+        return 0;
     }
 
     private static JugadorId? ConAccionesLegales(EstadoPartida estado)

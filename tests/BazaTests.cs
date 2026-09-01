@@ -86,6 +86,10 @@ public class BazaTests
 
         Assert.False(r.EsParda);
         Assert.Equal(E0, jugadas[r.Ganador].Item2); // ganó el equipo 0
+        // G1 (PREGUNTAS_ABIERTAS.md): entre los empatados arriba, "gana" el que tiró
+        // primero (posición 0, no la 2) — así el reductor sabe a quién hacer abrir la
+        // baza siguiente sin tener que desempatar aparte.
+        Assert.Equal(0, r.Ganador);
     }
 
     [Fact]
