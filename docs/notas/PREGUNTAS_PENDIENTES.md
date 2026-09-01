@@ -88,3 +88,42 @@ que las tengas todas juntas).
 pura sin IO, igual criterio que "EstadoPartida es serializable").
 
 ---
+
+## P17. ¿Quién puede abrir el envido antes de que le llegue el turno?
+
+**Estado:** ABIERTA
+
+**Contexto:** un test de propiedad nuevo (`tests/InvariantesFuzzTests.cs`, A1) encontró que
+`AccionesLegales` y `Partido.Aplicar` están en desacuerdo sobre esto. Repro completa y
+diagnóstico en `docs/notas/HALLAZGOS_NOCHE_2.md` H1; resumen acá.
+
+`RULES_Afinadas.md` (§"El toque de envido") dice: *"un jugador que ya tiro su carta no
+puede iniciar el envido, pero los que todavia no tiraron si pueden"*. Esto no aclara si
+"los que todavía no tiraron" es cualquiera que no tiró (aunque el turno todavía no le haya
+llegado a él ni a nadie de los que están antes en el orden de juego) o sólo el que tiene el
+turno en ese momento.
+
+Hoy el código interpreta las dos cosas a la vez, cada función una distinta:
+- `AccionesLegales`, en turno libre, sólo ofrece abrir el envido a `e.Turno` (interpretación
+  estricta: "tu turno, y no tiraste").
+- `Aplicar` (`PuedeIniciarEnvido`) acepta a cualquier jugador que no haya tirado todavía,
+  sin mirar de quién es el turno (interpretación amplia: "cualquiera que no tiró").
+
+En 1v1 esto ya es observable: antes de que el mano tire la primera carta, el pie (que
+todavía no tiró, porque nadie tiró nada) puede "abrir" el envido vía `Aplicar` aunque
+`AccionesLegales` no se lo ofrezca. En 2v2/3v3 el caso con más sentido de juego real es un
+compañero que todavía no tiró su carta pero al que tampoco le llegó el turno.
+
+**Qué necesito que decidas:**
+1. ¿El envido lo puede abrir cualquier jugador que no tiró todavía (aunque no sea su
+   turno), o sólo el que tiene el turno en ese momento?
+2. Si es "cualquiera que no tiró": `AccionesLegales` está de más restrictiva y hay que
+   ampliarla. Si es "sólo el del turno": `PuedeIniciarEnvido` (en `Aplicar`) le falta el
+   chequeo de turno.
+
+**Mi recomendación:** ninguna con confianza — es una lectura de regla, no algo que se
+pueda inferir del código. Si tuviera que apostar, la letra de la regla ("los que todavía no
+tiraron") suena más consistente con la interpretación amplia (cualquiera que no tiró),
+pero no es una lectura inambigua y no la voy a implementar sin que la confirmes.
+
+---

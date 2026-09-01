@@ -73,10 +73,20 @@ public class GrabacionTextoTests
             g.Acciones);
     }
 
+    // A5 (PLAN_NOCTURNO_2.md, Bloque A): corpus grande de semillas fuzz en los tres modos,
+    // no sólo una por modo, para que el round trip del codec quede realmente cubierto.
     [Theory]
     [InlineData(3, 2)]
     [InlineData(77, 4)]
     [InlineData(2024, 6)]
+    [InlineData(1, 2)]
+    [InlineData(2, 2)]
+    [InlineData(5, 4)]
+    [InlineData(11, 4)]
+    [InlineData(9999, 4)]
+    [InlineData(42, 6)]
+    [InlineData(12345, 6)]
+    [InlineData(555, 6)]
     public void EscribirYLeer_RoundTrip_ReproduceElMismoEstadoFinal(int semilla, int cantidadJugadores)
     {
         var grabacion = JugarUnaGrabacionFuzz(semilla, cantidadJugadores);
