@@ -100,6 +100,23 @@ public class EnvidoCantoTests
         Assert.Equal(new Cobro(E0, 6), e4.CobroEnvido);
     }
 
+    // B2: la Falta Envido es terminal — a diferencia de Envido/Real Envido, sobre una Falta
+    // Envido pendiente no se puede revirar a nada más, sólo Quiero/NoQuiero.
+    [Fact]
+    public void FaltaEnvido_EsTerminal_NoSePuedeRevirar()
+    {
+        var e = Estado(Mano31, Mano7, repartidor: J1); // Turno J0
+        var e1 = Partido.Aplicar(e, new CantarEnvido(J0, EnvidoCanto.FaltaEnvido));
+
+        var acciones = Partido.AccionesLegales(e1, J1);
+        Assert.Contains(acciones, a => a is Quiero);
+        Assert.Contains(acciones, a => a is NoQuiero);
+        Assert.DoesNotContain(acciones, a => a is CantarEnvido);
+
+        Assert.Throws<InvalidOperationException>(
+            () => Partido.Aplicar(e1, new CantarEnvido(J1, EnvidoCanto.FaltaEnvido)));
+    }
+
     [Fact]
     public void FaltaEnvidoQuerido_ContraElFinDeLasMalas_SiElPrimeroEstaEnMalas()
     {
