@@ -23,6 +23,7 @@ public readonly record struct ResultadoBaza
         return new ResultadoBaza(indiceJugada);
     }
 
+    /// <summary>True si la baza quedó parda (el máximo de fuerza lo comparten equipos distintos).</summary>
     public bool EsParda => _ganador < 0;
 
     /// <summary>Índice de la jugada ganadora. Lanza si la baza es parda.</summary>

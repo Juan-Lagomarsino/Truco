@@ -13,9 +13,18 @@ namespace Domain;
 /// </summary>
 public sealed record Grabacion
 {
+    /// <summary>A cuántos puntos se jugó el partido. Ver <see cref="Partido.Nueva"/>.</summary>
     public required int Largo { get; init; }
+
+    /// <summary>La semilla base del barajado con la que se creó el partido.</summary>
     public required int Semilla { get; init; }
+
+    /// <summary>El repartidor inicial, o null para usar el default de <see cref="Partido.Nueva"/>.</summary>
     public JugadorId? RepartidorInicial { get; init; }
+
+    /// <summary>Cuántos jugadores había en la mesa.</summary>
     public required int CantidadJugadores { get; init; }
+
+    /// <summary>Las acciones aplicadas, en el orden en que se jugaron.</summary>
     public required IReadOnlyList<Accion> Acciones { get; init; }
 }

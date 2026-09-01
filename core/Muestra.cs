@@ -18,8 +18,10 @@ public readonly record struct Muestra
     /// </summary>
     public static readonly IReadOnlyList<int> NumerosDePieza = new[] { 2, 4, 5, 11, 10 };
 
+    /// <summary>La carta que salió de muestra.</summary>
     public Carta Carta { get; }
 
+    /// <summary>Crea la muestra a partir de la carta que se dio vuelta.</summary>
     public Muestra(Carta carta)
     {
         Carta = carta;

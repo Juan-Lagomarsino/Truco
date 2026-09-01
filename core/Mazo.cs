@@ -23,6 +23,7 @@ public sealed class Mazo
     /// <summary>Las cartas en orden actual. Índice 0 = tope (la próxima a repartir).</summary>
     public IReadOnlyList<Carta> Cartas => _cartas;
 
+    /// <summary>Cuántas cartas quedan en el mazo.</summary>
     public int Cantidad => _cartas.Count;
 
     /// <summary>

@@ -25,6 +25,7 @@ public static class GrabacionTexto
 {
     private const string Marca = "Grabacion v1";
 
+    /// <summary>Codifica la grabación al formato de texto v1 descrito arriba.</summary>
     public static string Escribir(Grabacion g)
     {
         var lineas = new List<string>
@@ -42,6 +43,7 @@ public static class GrabacionTexto
         return string.Join('\n', lineas);
     }
 
+    /// <summary>Decodifica una Grabacion del formato de texto v1. Lanza <see cref="FormatException"/> si el texto no respeta el formato.</summary>
     public static Grabacion Leer(string texto)
     {
         var lineas = texto.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);

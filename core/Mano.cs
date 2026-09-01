@@ -11,6 +11,11 @@ namespace Domain;
 /// </summary>
 public static class Mano
 {
+    /// <summary>
+    /// Resuelve la mano a partir de las bazas jugadas hasta ahora (a lo sumo tres).
+    /// <paramref name="mano"/> es el equipo del jugador mano, para desempatar cuando todas
+    /// las bazas jugadas fueron parda.
+    /// </summary>
     public static ResultadoMano Resolver(IReadOnlyList<GanadorBaza> bazas, EquipoId mano)
     {
         if (bazas.Count > 3)

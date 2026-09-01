@@ -19,11 +19,13 @@ public sealed record EstadoPartida
     /// <summary>Número de mano jugada, desde 0. Junto con la semilla determina el reparto.</summary>
     public required int NumeroDeMano { get; init; }
 
+    /// <summary>Cuántos jugadores hay en la mesa: 2 (1v1), 4 (2v2) o 6 (a 6).</summary>
     public required int CantidadJugadores { get; init; }
 
     /// <summary>El jugador que repartió esta mano. El mano es el siguiente.</summary>
     public required JugadorId Repartidor { get; init; }
 
+    /// <summary>La carta que define el palo de las piezas en esta mano.</summary>
     public required Muestra Muestra { get; init; }
 
     /// <summary>Cartas que le quedan a cada jugador, indexadas por <see cref="JugadorId.Valor"/>.</summary>

@@ -19,6 +19,7 @@ public readonly record struct GanadorBaza
     /// <summary>La baza la ganó <paramref name="equipo"/>.</summary>
     public static GanadorBaza De(EquipoId equipo) => new(equipo.Valor);
 
+    /// <summary>True si la baza quedó parda (nadie se la llevó).</summary>
     public bool EsParda => _equipo < 0;
 
     /// <summary>El equipo que ganó la baza. Lanza si fue parda.</summary>

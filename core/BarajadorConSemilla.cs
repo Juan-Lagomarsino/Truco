@@ -10,14 +10,17 @@ public sealed class BarajadorConSemilla : IBarajador
 {
     private readonly Random _rng;
 
+    /// <summary>La semilla con la que se creó este barajador.</summary>
     public int Semilla { get; }
 
+    /// <summary>Crea un barajador determinista a partir de <paramref name="semilla"/>.</summary>
     public BarajadorConSemilla(int semilla)
     {
         Semilla = semilla;
         _rng = new Random(semilla);
     }
 
+    /// <summary>Devuelve una permutación de <paramref name="cartas"/>. No muta la entrada.</summary>
     public IReadOnlyList<Carta> Barajar(IReadOnlyList<Carta> cartas)
     {
         // Fisher-Yates: barajado uniforme e in-place sobre una copia.

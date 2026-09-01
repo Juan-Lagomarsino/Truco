@@ -18,6 +18,7 @@ public readonly record struct ResultadoMano
     /// <summary>La mano la ganó <paramref name="equipo"/>.</summary>
     public static ResultadoMano Gana(EquipoId equipo) => new(equipo.Valor);
 
+    /// <summary>True si la mano ya tiene un equipo ganador (no hace falta jugar más bazas).</summary>
     public bool EstaDefinida => _ganador >= 0;
 
     /// <summary>El equipo que ganó la mano. Lanza si todavía está indefinida.</summary>

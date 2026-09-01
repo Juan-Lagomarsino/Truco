@@ -36,6 +36,7 @@ public sealed class Contador
     /// <summary>La mitad del partido: la frontera entre malas y buenas.</summary>
     public int Mitad => Largo / 2;
 
+    /// <summary>Los puntos acumulados de <paramref name="equipo"/>.</summary>
     public int Puntos(EquipoId equipo) => _puntos[Indice(equipo)];
 
     /// <summary>

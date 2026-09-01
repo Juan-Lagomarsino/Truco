@@ -7,8 +7,10 @@ namespace Domain;
 /// </summary>
 public readonly record struct EquipoId
 {
+    /// <summary>El número de equipo: 0 o 1.</summary>
     public int Valor { get; }
 
+    /// <summary>Crea el identificador. Lanza si <paramref name="valor"/> es negativo.</summary>
     public EquipoId(int valor)
     {
         if (valor < 0)

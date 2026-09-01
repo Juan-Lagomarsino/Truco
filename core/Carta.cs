@@ -23,9 +23,13 @@ public enum Palo
 /// </summary>
 public readonly record struct Carta
 {
+    /// <summary>El número de la carta. Pertenece a {1,2,3,4,5,6,7,10,11,12} (sin 8 ni 9).</summary>
     public int Numero { get; }
+
+    /// <summary>El palo de la carta.</summary>
     public Palo Palo { get; }
 
+    /// <summary>Crea la carta. Lanza si el número o el palo no existen en el mazo español.</summary>
     public Carta(int numero, Palo palo)
     {
         if (!EsNumeroDelMazo(numero))
