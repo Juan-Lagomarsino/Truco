@@ -13,12 +13,18 @@ public class PoliticaSimpleFuzzTests
     [InlineData(2, 3)]
     [InlineData(2, 77)]
     [InlineData(2, 2024)]
+    [InlineData(2, 1)]
+    [InlineData(2, 99999)]
     [InlineData(4, 3)]
     [InlineData(4, 77)]
     [InlineData(4, 2024)]
+    [InlineData(4, 11)]
+    [InlineData(4, 55555)]
     [InlineData(6, 3)]
     [InlineData(6, 77)]
     [InlineData(6, 2024)]
+    [InlineData(6, 42)]
+    [InlineData(6, 424242)]
     public void BotVsBot_TerminaConUnGanador_SinDeadlock(int cantidadJugadores, int semilla)
     {
         var e = Partido.Nueva(largo: 30, semilla: semilla, cantidadJugadores: cantidadJugadores);
