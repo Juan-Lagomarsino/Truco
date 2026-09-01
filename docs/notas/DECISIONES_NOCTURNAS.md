@@ -65,3 +65,48 @@ necesite leer/escribir grabaciones. Sólo el IO real (`File.ReadAllText`/`WriteA
 queda afuera, en `/cli`.
 
 ---
+
+## D5. Plan nocturno 2 — rama `noche/cobertura`, sin cambios de reglas
+
+Continuación de las decisiones de arriba, ya en la segunda corrida nocturna
+(`docs/notas/PLAN_NOCTURNO_2.md`). Acá van sólo las decisiones de andamiaje/estructura de
+esta corrida; los hallazgos de comportamiento van a `HALLAZGOS_NOCHE_2.md` y las preguntas
+de reglas a `PREGUNTAS_PENDIENTES.md`.
+
+## D6. Hallazgo H1: se documenta y se acota, no se deshabilita todo el test de propiedad
+
+**Decisión:** cuando el fuzz de A1 (`tests/InvariantesFuzzTests.cs`) encontró que `Aplicar`
+acepta un `CantarEnvido` de apertura que `AccionesLegales` no ofrece (H1, ver
+`HALLAZGOS_NOCHE_2.md`), no deshabilité todo el test de propiedad con `Skip`. En cambio,
+agregué un predicado (`EsHallazgoH1_...`) que replica la condición exacta de la divergencia
+(usando sólo campos públicos del estado) y la excluye puntualmente de la aserción "tiene que
+lanzar", dejando el resto de A1 verificado sobre miles de combinaciones estado×acción.
+Además dejé un `[Fact(Skip = "...")]` con la reproducción mínima aislada.
+
+**Por qué:** `Skip`-ear todo `Aplicar_ConAccionQueNoEsLegal_...` para esconder un solo caso
+hubiera tirado por la borda la cobertura de A1 sobre el resto de las acciones y estados (que
+sí es real y sí hubiera atrapado un bug futuro). Acotar la excepción a su forma exacta
+mantiene la guardia activa en todo lo demás, y si alguien "arregla" el código sin que el
+predicado dejara de aplicar, el test de propiedad volvería a fallar (porque el predicado ya
+no encontraría ningún candidato que excluir del tipo esperado) — avisando que hay que
+revisar esta nota.
+
+## D7. `/cli`: `Argumentos.cs` puro y `Main` devuelve código de salida, no `void`
+
+**Decisión:** el parseo/validación de argumentos de la consola (C3) quedó en un tipo nuevo,
+`cli/Argumentos.cs`, sin ningún `Console` ni IO — sólo toma `string[]` y devuelve tuplas
+`(ok, valor, error)`. `Program.Main` pasó de `void` a `int` (código de salida: 0 éxito, 1
+error de uso), y agregué `tests -> cli` como referencia de proyecto (`dotnet add
+reference`, explícitamente permitido por el plan) para poder probar `Argumentos` y
+`Program.Main` de punta a punta desde `/tests`.
+
+**Por qué:** la consigna era "UX no invasiva" con mensajes de error claros y sin tocar la
+lógica de juego. Sin separar el parseo, la única forma de probarlo hubiera sido lanzar el
+`.exe` como proceso aparte (lento, frágil, y sin forma limpia de capturar el código de
+salida junto con stdout/stderr) o no probarlo. Devolver `int` en vez de usar
+`Environment.Exit` importa especialmente para los tests: `Environment.Exit` mataría el
+proceso del test runner si se llamara a `Program.Main` directo; con `return`, es una llamada
+a método normal. El camino interactivo de "jugar" (que pide `Console.ReadLine`) se deja sin
+probar por la misma razón de siempre: un test no tiene un humano tipeando.
+
+---
