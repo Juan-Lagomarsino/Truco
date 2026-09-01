@@ -71,6 +71,23 @@ public class FlorCantoTests
         Assert.Equal(new Cobro(E0, 3), e2.CobroFlor); // la flor sí
     }
 
+    // B4: si quedan flor y truco pendientes, primero se resuelve la flor y recién después
+    // se contesta el truco (misma lógica que el envido, ver EnvidoCantoTests.ElEnvidoVaAntesQueElTruco).
+    [Fact]
+    public void LaFlorVaAntesQueElTruco()
+    {
+        // J1 (mano, sin flor) canta truco; J0 (con flor), en vez de responder, canta flor.
+        var e = Estado(Flor38Espada, SinFlor, repartidor: J0); // Turno J1 (mano)
+        var e1 = Partido.Aplicar(e, new CantarTruco(J1));
+        var e2 = Partido.Aplicar(e1, new CantarFlor(J0));
+
+        // La flor se resolvió ya (J1 no tiene flor: cobra directo); el truco sigue pendiente.
+        Assert.Equal(new Cobro(E0, 3), e2.CobroFlor);
+        Assert.True(e2.HayCantoPendiente);
+        Assert.Contains(Partido.AccionesLegales(e2, J0), a => a is Quiero);
+        Assert.Contains(Partido.AccionesLegales(e2, J0), a => a is NoQuiero);
+    }
+
     [Fact]
     public void SinFlor_NoSePuedeCantar()
     {

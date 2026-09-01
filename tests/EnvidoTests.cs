@@ -63,6 +63,17 @@ public class EnvidoTests
         Assert.Equal(24, Envido.De(mano, muestra)); // 20 + 0 + 4
     }
 
+    // C1: el 12 espejo (cuando la muestra es pieza) cuenta como esa pieza también para el
+    // envido, no sólo para la flor. Muestra 2 de Oro → el 12 de Oro vale como un 2 (30).
+    [Fact]
+    public void El12Espejo_CuentaComoPieza_ParaElEnvido()
+    {
+        var muestra = new Muestra(C(2, Palo.Oro));
+        var mano = new[] { C(12, Palo.Oro), C(7, Palo.Espada), C(3, Palo.Copa) };
+
+        Assert.Equal(37, Envido.De(mano, muestra)); // 30 (12 espejo) + 7 (la mejor de las otras)
+    }
+
     // Con dos piezas la mano es flor: el envido no está definido.
     [Fact]
     public void ConDosPiezas_LanzaPorqueEsFlor()

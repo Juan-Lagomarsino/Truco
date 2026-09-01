@@ -82,6 +82,45 @@ public class FlorBidTests
         Assert.Empty(Partido.AccionesLegales(e1, J0));
     }
 
+    // F2, simétrico a ConFlorEnvido_RivalSinFlor_CobraTres: si nadie enfrenta la Contra
+    // Flor al Resto tampoco hay querido/no querido, cobra directo los 3 de la flor.
+    [Fact]
+    public void ContraFlorAlResto_RivalSinFlor_CobraTres()
+    {
+        var e = Estado(Flor38Espada, SinFlor, repartidor: J1); // J1 sin flor
+        var e1 = Partido.Aplicar(e, new CantarContraFlorAlResto(J0));
+
+        Assert.Equal(new Cobro(E0, 3), e1.CobroFlor);
+        Assert.True(e1.FlorResuelta);
+    }
+
+    // C3: los cantos de flor no se encadenan como el envido. Con un bid pendiente, el
+    // rival sólo puede Quiero/NoQuiero — no puede "revirar" a otro canto de flor.
+    [Fact]
+    public void ConUnBidPendiente_ElRivalNoPuedeCantarOtroBidDeFlor_SoloQuieroONoQuiero()
+    {
+        var e = Estado(Flor38Espada, Flor37Oro, repartidor: J1);
+        var e1 = Partido.Aplicar(e, new CantarFlorEnvido(J0));
+
+        var acciones = Partido.AccionesLegales(e1, J1);
+        Assert.DoesNotContain(acciones, a => a is CantarContraFlorAlResto);
+        Assert.DoesNotContain(acciones, a => a is CantarFlorEnvido);
+        Assert.DoesNotContain(acciones, a => a is CantarFlor);
+    }
+
+    // C3: una vez resuelto un bid, no se puede cantar otro (no hay escalera de flor).
+    [Fact]
+    public void UnaVezResueltoUnBid_NoSePuedeCantarOtroCantoDeFlor()
+    {
+        var e = Estado(Flor38Espada, Flor37Oro, repartidor: J1);
+        var e1 = Partido.Aplicar(e, new CantarFlorEnvido(J0));
+        var e2 = Partido.Aplicar(e1, new Quiero(J1));
+
+        Assert.True(e2.FlorResuelta);
+        Assert.DoesNotContain(Partido.AccionesLegales(e2, e2.Turno), a => a is CantarContraFlorAlResto);
+        Assert.Throws<InvalidOperationException>(() => Partido.Aplicar(e2, new CantarContraFlorAlResto(J0)));
+    }
+
     private static EstadoPartida Estado(
         IReadOnlyList<Carta> mano0, IReadOnlyList<Carta> mano1, JugadorId repartidor)
     {

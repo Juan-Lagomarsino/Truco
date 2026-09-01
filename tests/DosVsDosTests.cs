@@ -128,6 +128,99 @@ public class DosVsDosTests
         Assert.Equal(new Cobro(E0, 6), e1.CobroFlor);
     }
 
+    // G1: si dos del mismo equipo empatan arriba, la baza la abre el que tiró primero
+    // (el más cercano al que abrió), no cualquiera de los dos.
+    [Fact]
+    public void EmpateArribaDelMismoEquipo_AbreLaSiguienteElQueTiroPrimero()
+    {
+        // Mismo escenario que UnaBazaGanadaPorDosDelMismoEquipo_LaGanaEseEquipo: J2 y J0
+        // (equipo 0) empatan con un 3 arriba de todo. En el orden de juego J1,J2,J3,J0,
+        // J2 tira su 3 antes que J0: tiene que abrir la baza siguiente J2, no J0.
+        var e = Estado(
+            mano0: new[] { C(3, Palo.Copa), C(6, Palo.Basto), C(7, Palo.Oro) },
+            mano1: new[] { C(4, Palo.Basto), C(5, Palo.Espada), C(6, Palo.Oro) },
+            mano2: new[] { C(3, Palo.Oro), C(6, Palo.Espada), C(7, Palo.Basto) },
+            mano3: new[] { C(5, Palo.Basto), C(4, Palo.Espada), C(6, Palo.Espada) },
+            repartidor: J0);
+
+        var e1 = Partido.Aplicar(e, new TirarCarta(J1, C(4, Palo.Basto)));
+        var e2 = Partido.Aplicar(e1, new TirarCarta(J2, C(3, Palo.Oro))); // primero de los empatados
+        var e3 = Partido.Aplicar(e2, new TirarCarta(J3, C(5, Palo.Basto)));
+        var e4 = Partido.Aplicar(e3, new TirarCarta(J0, C(3, Palo.Copa))); // segundo de los empatados
+
+        Assert.Equal(J2, e4.Abridor);
+        Assert.Equal(J2, e4.Turno);
+    }
+
+    // B9: cualquier jugador del equipo rival puede responder un canto — no hace falta que
+    // sea "el pie" (el último del equipo en recibir cartas). Acá responde J1, no J3.
+    [Fact]
+    public void CualquieraDelEquipoRivalPuedeResponderElEnvido_NoSoloElPie()
+    {
+        var muestra = new Muestra(C(6, Palo.Basto));
+        var e = Estado(
+            mano0: new[] { C(6, Palo.Oro), C(5, Palo.Oro), C(2, Palo.Copa) },   // envido 31
+            mano1: new[] { C(7, Palo.Espada), C(4, Palo.Oro), C(3, Palo.Copa) },
+            mano2: new[] { C(4, Palo.Copa), C(5, Palo.Espada), C(3, Palo.Oro) },
+            mano3: new[] { C(6, Palo.Copa), C(4, Palo.Espada), C(3, Palo.Oro) },
+            repartidor: J3, muestra: muestra); // mano = J0, Turno J0
+
+        var e1 = Partido.Aplicar(e, new CantarEnvido(J0, EnvidoCanto.Envido));
+
+        // Los dos jugadores del equipo rival (J1 y J3) pueden responder, no sólo el pie (J3).
+        Assert.Contains(Partido.AccionesLegales(e1, J1), a => a is Quiero);
+        Assert.Contains(Partido.AccionesLegales(e1, J3), a => a is Quiero);
+
+        // Responde J1 (no el pie): compromete a todo el equipo.
+        var e2 = Partido.Aplicar(e1, new Quiero(J1));
+        Assert.NotNull(e2.CobroEnvido);
+        Assert.Empty(Partido.AccionesLegales(e2, J3)); // ya se resolvió, J3 no tiene nada que hacer
+    }
+
+    // B9, para el truco: mismo criterio, cualquiera del equipo responde.
+    [Fact]
+    public void CualquieraDelEquipoRivalPuedeResponderElTruco_NoSoloElPie()
+    {
+        // Muestra de Basto (no Copa): así ninguna carta de estas manos es pieza ni forma
+        // flor, y no se abre una ventana de denuncia de flor al terminar la mano.
+        var e = Estado(
+            mano0: new[] { C(6, Palo.Oro), C(5, Palo.Oro), C(2, Palo.Copa) },
+            mano1: new[] { C(7, Palo.Espada), C(4, Palo.Oro), C(3, Palo.Copa) },
+            mano2: new[] { C(4, Palo.Copa), C(5, Palo.Espada), C(3, Palo.Oro) },
+            mano3: new[] { C(6, Palo.Copa), C(4, Palo.Espada), C(3, Palo.Oro) },
+            repartidor: J3, muestra: new Muestra(C(6, Palo.Basto))); // mano = J0, Turno J0
+
+        var e1 = Partido.Aplicar(e, new CantarTruco(J0)); // responde el equipo 1 (J1, J3)
+
+        Assert.Contains(Partido.AccionesLegales(e1, J1), a => a is Quiero);
+        Assert.Contains(Partido.AccionesLegales(e1, J3), a => a is Quiero);
+
+        var e2 = Partido.Aplicar(e1, new Quiero(J1)); // responde J1, no el pie J3
+        Assert.Equal(NivelTruco.Truco, e2.Truco);
+        Assert.Empty(Partido.AccionesLegales(e2, J3));
+    }
+
+    // B7: irse al mazo es del equipo. Si J1 se va, entrega lo que valía la mano y la mano
+    // termina para los cuatro, aunque su compañero J3 no haya hecho nada.
+    [Fact]
+    public void IrseAlMazo_EsDelEquipo_ElRivalCobraYLaManoTermina()
+    {
+        // Muestra de Basto: sin piezas ni flor escondida, para que TerminarMano cierre
+        // directo (sin ventana de denuncia) y se pueda comparar el puntaje sin más ruido.
+        var e = Estado(
+            mano0: new[] { C(6, Palo.Oro), C(5, Palo.Oro), C(2, Palo.Copa) },
+            mano1: new[] { C(7, Palo.Espada), C(4, Palo.Oro), C(3, Palo.Copa) },
+            mano2: new[] { C(4, Palo.Copa), C(5, Palo.Espada), C(3, Palo.Oro) },
+            mano3: new[] { C(6, Palo.Copa), C(4, Palo.Espada), C(3, Palo.Oro) },
+            repartidor: J3, muestra: new Muestra(C(6, Palo.Basto))); // mano = J0, Turno J0
+
+        var e1 = Partido.Aplicar(e, new IrseAlMazo(J0)); // se va J0 (equipo 0)
+
+        Assert.Equal(1, e1.Contador.Puntos(E1)); // el equipo rival cobra
+        Assert.Equal(0, e1.Contador.Puntos(E0));
+        Assert.Equal(1, e1.NumeroDeMano); // la mano terminó y se repartió la siguiente
+    }
+
     // 16d: una partida 2v2 completa con todos los cantos termina, sin deadlock y con un
     // solo equipo ganador, y los puntos nunca decrecen.
     [Theory]

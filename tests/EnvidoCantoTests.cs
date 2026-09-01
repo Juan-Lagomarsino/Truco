@@ -111,6 +111,40 @@ public class EnvidoCantoTests
         Assert.Equal(new Cobro(E0, 15), e2.CobroEnvido);
     }
 
+    // A4: si el que va primero (el líder) ya está en buenas, la Falta vale lo que le
+    // falta para GANAR EL PARTIDO, no para llegar a la mitad.
+    [Fact]
+    public void FaltaEnvidoQuerido_ContraElFinDelPartido_SiElPrimeroYaEstaEnBuenas()
+    {
+        // Partido a 30 (mitad 15). El equipo 0 ya está en buenas (20); el líder es él,
+        // así que la falta vale lo que le falta al partido: 30 - 20 = 10.
+        var contador = new Contador(30).Sumar(E0, 20);
+        var e = Estado(Mano31, Mano7, repartidor: J1, contador: contador); // J0 (E0) es mano
+        var e1 = Partido.Aplicar(e, new CantarEnvido(J0, EnvidoCanto.FaltaEnvido));
+        var e2 = Partido.Aplicar(e1, new Quiero(J1));
+
+        Assert.Equal(new Cobro(E0, 10), e2.CobroEnvido);
+    }
+
+    // B5: con los dos equipos empatados en puntaje, la Falta vale lo mismo sin importar
+    // qué equipo la cante (el "líder" es el mismo puntaje para los dos).
+    [Fact]
+    public void FaltaEnvido_ConLosEquiposEmpatados_ValeLoMismoParaCualquierEquipo()
+    {
+        // Los dos en 10 (mitad 15, todavía en malas): falta = 15 - 10 = 5 para cualquiera.
+        var contadorEmpatado = new Contador(30).Sumar(E0, 10).Sumar(E1, 10);
+
+        var eAbreJ0 = Estado(Mano31, Mano7, repartidor: J1, contador: contadorEmpatado); // J0 mano
+        var e1 = Partido.Aplicar(eAbreJ0, new CantarEnvido(J0, EnvidoCanto.FaltaEnvido));
+        var e2 = Partido.Aplicar(e1, new Quiero(J1));
+        Assert.Equal(new Cobro(E0, 5), e2.CobroEnvido);
+
+        var eAbreJ1 = Estado(Mano7, Mano31, repartidor: J0, contador: contadorEmpatado); // J1 mano, J1 tiene el 7 ahora
+        var e3 = Partido.Aplicar(eAbreJ1, new CantarEnvido(J1, EnvidoCanto.FaltaEnvido));
+        var e4 = Partido.Aplicar(e3, new Quiero(J0));
+        Assert.Equal(new Cobro(E1, 5), e4.CobroEnvido); // misma falta (5), sea cual sea el que cantó
+    }
+
     [Fact]
     public void ElEnvidoSoloSePuedeTocarEnLaPrimeraBaza()
     {
